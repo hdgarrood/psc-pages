@@ -6,9 +6,10 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Writer
 import Control.Arrow (first)
+import Data.Ord (comparing)
 import Data.Function (on)
 import Data.Default (def)
-import Data.List (nub, replicate, intercalate)
+import Data.List (nub, sortBy, replicate, intercalate)
 import Data.List.Split (splitOn)
 import Data.String (fromString)
 import Data.Maybe (fromMaybe)
@@ -126,7 +127,7 @@ contentsPageHtml :: FilePath -> [P.Module] -> H.Html
 contentsPageHtml outputDir ms = do
   template outputDir "index.html" "Contents" $ do
     H.h2 $ text "Modules"
-    H.ul $ for_ ms $ \(P.Module moduleName _ _) -> H.li $
+    H.ul $ for_ (sortBy (comparing $ \(P.Module moduleName _ _) -> moduleName) ms) $ \(P.Module moduleName _ _) -> H.li $
       H.a ! A.href (fromString (filePathFor moduleName `relativeTo` "index.html")) $ text (show moduleName)
 
 moduleToHtml :: FilePath -> P.Module -> H.Html
