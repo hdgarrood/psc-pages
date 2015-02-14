@@ -1,0 +1,29 @@
+{
+  "name": "psc-pages-core-docs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/paf31/psc-pages",
+  "authors": [
+    "Phil Freeman <paf31@cantab.net>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "purescript-arrays": "~0.3.1",
+    "purescript-enums": "~0.3.0",
+    "purescript-free": "~0.2.0",
+    "purescript-globals": "~0.1.5",
+    "purescript-graphs": "~0.2.0",
+    "purescript-quickcheck": "~0.4.0",
+    "purescript-random": "~0.1.2",
+    "purescript-refs": "~0.1.2",
+    "purescript-unfoldable": "~0.2.0",
+    "purescript-validation": "~0.0.3"
+  }
+}
