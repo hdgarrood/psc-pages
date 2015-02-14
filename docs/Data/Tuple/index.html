@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Tuple</title></head><body><div id="header"><h1>Data.Tuple</h1></div>
+
+
+
+
+<a name="Tuple"></a><p class="decl"><code><span class="keyword">data</span> Tuple a b</code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Tuple</span> a b</code></li></ul>
+<a name="showTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Show a<span class="syntax">,</span> Show b<span class="syntax">) =&gt; </span>Show (Tuple a b)</code></p>
+<a name="eqTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Eq a<span class="syntax">,</span> Eq b<span class="syntax">) =&gt; </span>Eq (Tuple a b)</code></p>
+<a name="ordTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">ordTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Ord a<span class="syntax">,</span> Ord b<span class="syntax">) =&gt; </span>Ord (Tuple a b)</code></p>
+<a name="semigroupoidTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupoidTuple</span> <span class="syntax">::</span> Semigroupoid Tuple</code></p>
+<a name="semigroupTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Semigroup a<span class="syntax">,</span> Semigroup b<span class="syntax">) =&gt; </span>Semigroup (Tuple a b)</code></p>
+<a name="monoidTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Monoid a<span class="syntax">,</span> Monoid b<span class="syntax">) =&gt; </span>Monoid (Tuple a b)</code></p>
+<a name="functorTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorTuple</span> <span class="syntax">::</span> Functor (Tuple a)</code></p>
+<a name="applyTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Semigroup a<span class="syntax">) =&gt; </span>Apply (Tuple a)</code></p>
+<a name="applicativeTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Monoid a<span class="syntax">) =&gt; </span>Applicative (Tuple a)</code></p>
+<a name="bindTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Semigroup a<span class="syntax">) =&gt; </span>Bind (Tuple a)</code></p>
+<a name="monadTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Monoid a<span class="syntax">) =&gt; </span>Monad (Tuple a)</code></p>
+<a name="extendTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">extendTuple</span> <span class="syntax">::</span> Extend (Tuple a)</code></p>
+<a name="comonadTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">comonadTuple</span> <span class="syntax">::</span> Comonad (Tuple a)</code></p>
+<a name="lazyTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">lazyTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Lazy a<span class="syntax">,</span> Lazy b<span class="syntax">) =&gt; </span>Lazy (Tuple a b)</code></p>
+<a name="lazyLazy1Tuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">lazyLazy1Tuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Lazy1 l1<span class="syntax">,</span> Lazy1 l2<span class="syntax">) =&gt; </span>Lazy (Tuple (l1 a) (l2 b))</code></p>
+<a name="lazyLazy2Tuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">lazyLazy2Tuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Lazy2 l1<span class="syntax">,</span> Lazy2 l2<span class="syntax">) =&gt; </span>Lazy (Tuple (l1 a b) (l2 c d))</code></p>
+<a name="fst"></a><p class="decl"><code><span class="ident">fst</span> <span class="syntax">::</span> forall a b. Tuple a b -&gt; a</code></p>
+
+<a name="snd"></a><p class="decl"><code><span class="ident">snd</span> <span class="syntax">::</span> forall a b. Tuple a b -&gt; b</code></p>
+
+<a name="curry"></a><p class="decl"><code><span class="ident">curry</span> <span class="syntax">::</span> forall a b c. (Tuple a b -&gt; c) -&gt; a -&gt; b -&gt; c</code></p>
+
+<a name="uncurry"></a><p class="decl"><code><span class="ident">uncurry</span> <span class="syntax">::</span> forall a b c. (a -&gt; b -&gt; c) -&gt; Tuple a b -&gt; c</code></p>
+
+<a name="zip"></a><p class="decl"><code><span class="ident">zip</span> <span class="syntax">::</span> forall a b. [a] -&gt; [b] -&gt; [Tuple a b]</code></p>
+
+<a name="unzip"></a><p class="decl"><code><span class="ident">unzip</span> <span class="syntax">::</span> forall a b. [Tuple a b] -&gt; Tuple [a] [b]</code></p>
+
+
+<a name="swap"></a><p class="decl"><code><span class="ident">swap</span> <span class="syntax">::</span> forall a b. Tuple a b -&gt; Tuple b a</code></p>
+
+<div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>

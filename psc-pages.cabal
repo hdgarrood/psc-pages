@@ -26,6 +26,7 @@ executable psc-pages
                        data-default,
                        filepath,
                        directory,
-                       file-embed
+                       file-embed,
+                       split
   hs-source-dirs:      src
   default-language:    Haskell2010

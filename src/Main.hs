@@ -8,7 +8,8 @@ import Control.Monad.Writer
 import Control.Arrow (first)
 import Data.Function (on)
 import Data.Default (def)
-import Data.List (nub)
+import Data.List (nub, replicate, intercalate)
+import Data.List.Split (splitOn)
 import Data.String (fromString)
 import Data.Maybe (fromMaybe)
 import Data.Version (showVersion)
@@ -28,7 +29,7 @@ import qualified Paths_psc_pages as Paths
 
 import System.Exit (exitSuccess, exitFailure)
 import System.IO (hPutStrLn, stderr)
-import System.FilePath ((</>), takeDirectory, makeRelative)
+import System.FilePath ((</>), takeDirectory)
 import System.Directory (createDirectoryIfMissing)
 
 import Text.Blaze.Html ((!))
@@ -75,6 +76,12 @@ renderModule outputDir m@(P.Module moduleName _ exps) = do
 mkdirp :: FilePath -> IO ()
 mkdirp = createDirectoryIfMissing True . takeDirectory
 
+relativeTo :: FilePath -> FilePath -> FilePath
+relativeTo to from = go (splitOn "/" to) (splitOn "/" from)
+  where
+  go (x : xs) (y : ys) | x == y = go xs ys
+  go xs ys = intercalate "/" $ replicate (length ys - 1) ".." ++ xs
+
 stylesheet :: T.Text
 stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
 
@@ -106,7 +113,7 @@ template outputDir curFile title body = do
   H.docType
   H.html $ do
     H.head $ do
-      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString (curFile `makeRelative` (outputDir </> "style.css")))
+      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString ("style.css" `relativeTo` curFile))
       H.title $ H.toHtml title
     H.body $ do
       H.div ! A.id "header" $ do
@@ -117,11 +124,10 @@ template outputDir curFile title body = do
 
 contentsPageHtml :: FilePath -> [P.Module] -> H.Html
 contentsPageHtml outputDir ms = do
-  let curFile = outputDir </> "index.html"
-  template outputDir curFile "Contents" $ do
+  template outputDir "index.html" "Contents" $ do
     H.h2 $ text "Modules"
     H.ul $ for_ ms $ \(P.Module moduleName _ _) -> H.li $
-      H.a ! A.href (fromString (curFile `makeRelative` filePathFor moduleName)) $ text (show moduleName)
+      H.a ! A.href (fromString (filePathFor moduleName `relativeTo` "index.html")) $ text (show moduleName)
 
 moduleToHtml :: FilePath -> P.Module -> H.Html
 moduleToHtml outputDir (P.Module moduleName ds exps) = 

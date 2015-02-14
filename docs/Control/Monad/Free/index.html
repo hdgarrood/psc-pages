@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Control.Monad.Free</title></head><body><div id="header"><h1>Control.Monad.Free</h1></div>
+
+
+
+
+
+<a name="Free"></a><p class="decl"><code><span class="keyword">data</span> Free f a</code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Pure</span> a</code></li><li><code><span class="ctor">Free</span> f (Free f a)</code></li><li><code><span class="ctor">Gosub</span> forall s. (forall r. (Unit -&gt; Free f r) -&gt; (r -&gt; Free f a) -&gt; s) -&gt; s</code></li></ul>
+<a name="FreeC"></a><p class="decl"><code><span class="keyword">type</span> FreeC f <span class="syntax">=</span> Free (Coyoneda f)</code></p>
+<a name="MonadFree"></a><p class="decl"><code><span class="keyword">class</span> MonadFree f m</code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">wrap</span> <span class="syntax">::</span> forall a. f (m a) -&gt; m a</code></p></div>
+<a name="functorFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>Functor (Free f)</code></p>
+<a name="applyFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>Apply (Free f)</code></p>
+<a name="applicativeFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>Applicative (Free f)</code></p>
+<a name="bindFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>Bind (Free f)</code></p>
+<a name="monadFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>Monad (Free f)</code></p>
+<a name="monadTransFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadTransFree</span> <span class="syntax">::</span> MonadTrans Free</code></p>
+<a name="monadFreeFree"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadFreeFree</span> <span class="syntax">::</span> <span class="syntax">(</span>Functor f<span class="syntax">) =&gt; </span>MonadFree f (Free f)</code></p>
+<a name="liftF"></a><p class="decl"><code><span class="ident">liftF</span> <span class="syntax">::</span> forall f m a. (Functor f, Monad m, MonadFree f m) =&gt; f a -&gt; m a</code></p>
+
+<a name="pureF"></a><p class="decl"><code><span class="ident">pureF</span> <span class="syntax">::</span> forall f a. (Applicative f) =&gt; a -&gt; Free f a</code></p>
+
+<a name="liftFC"></a><p class="decl"><code><span class="ident">liftFC</span> <span class="syntax">::</span> forall f a. f a -&gt; FreeC f a</code></p>
+
+<a name="pureFC"></a><p class="decl"><code><span class="ident">pureFC</span> <span class="syntax">::</span> forall f a. (Applicative f) =&gt; a -&gt; FreeC f a</code></p>
+
+<a name="mapF"></a><p class="decl"><code><span class="ident">mapF</span> <span class="syntax">::</span> forall f g a. (Functor f, Functor g) =&gt; Natural f g -&gt; Free f a -&gt; Free g a</code></p>
+
+<a name="injC"></a><p class="decl"><code><span class="ident">injC</span> <span class="syntax">::</span> forall f g a. (Inject f g) =&gt; FreeC f a -&gt; FreeC g a</code></p>
+
+<a name="iterM"></a><p class="decl"><code><span class="ident">iterM</span> <span class="syntax">::</span> forall f m a. (Functor f, Monad m) =&gt; (forall a. f (m a) -&gt; m a) -&gt; Free f a -&gt; m a</code></p><pre><code> Note: can blow the stack!
+</code></pre>
+
+
+<a name="goM"></a><p class="decl"><code><span class="ident">goM</span> <span class="syntax">::</span> forall f m a. (Functor f, Monad m) =&gt; (f (Free f a) -&gt; m (Free f a)) -&gt; Free f a -&gt; m a</code></p><pre><code> Note: can blow the stack!
+</code></pre>
+<a name="resumeGosub"></a><p class="decl"><code><span class="ident">resumeGosub</span> <span class="syntax">::</span> forall f a. (Functor f) =&gt; Free f a -&gt; Either (f (Free f a)) (Free f a)</code></p>
+
+<a name="unsafeLeft"></a><p class="decl"><code><span class="ident">unsafeLeft</span> <span class="syntax">::</span> forall a b. Either a b -&gt; a</code></p>
+
+<a name="unsafeRight"></a><p class="decl"><code><span class="ident">unsafeRight</span> <span class="syntax">::</span> forall a b. Either a b -&gt; b</code></p>
+
+<a name="resume"></a><p class="decl"><code><span class="ident">resume</span> <span class="syntax">::</span> forall f a. (Functor f) =&gt; Free f a -&gt; Either (f (Free f a)) a</code></p>
+
+<a name="go"></a><p class="decl"><code><span class="ident">go</span> <span class="syntax">::</span> forall f a. (Functor f) =&gt; (f (Free f a) -&gt; Free f a) -&gt; Free f a -&gt; a</code></p>
+
+<a name="goEffImpl"></a><p class="decl"><code><span class="ident">goEffImpl</span> <span class="syntax">::</span> forall e f a. Fn6 (Free f a -&gt; Either (f (Free f a)) a) (Either (f (Free f a)) a -&gt; Boolean) (Either (f (Free f a)) a -&gt; f (Free f a)) (Either (f (Free f a)) a -&gt; a) (f (Free f a) -&gt; Eff e (Free f a)) (Free f a) (Eff e a)</code></p>
+<a name="goEff"></a><p class="decl"><code><span class="ident">goEff</span> <span class="syntax">::</span> forall e f a. (Functor f) =&gt; (f (Free f a) -&gt; Eff e (Free f a)) -&gt; Free f a -&gt; Eff e a</code></p>
+
+<a name="goMC"></a><p class="decl"><code><span class="ident">goMC</span> <span class="syntax">::</span> forall f m a. (Monad m) =&gt; Natural f m -&gt; FreeC f a -&gt; m a</code></p><pre><code> Note: can blow the stack!
+</code></pre>
+<a name="goEffC"></a><p class="decl"><code><span class="ident">goEffC</span> <span class="syntax">::</span> forall e f a. Natural f (Eff e) -&gt; FreeC f a -&gt; Eff e a</code></p>
+
+<div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>

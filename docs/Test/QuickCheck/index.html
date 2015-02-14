@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Test.QuickCheck</title></head><body><div id="header"><h1>Test.QuickCheck</h1></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<a name="AlphaNumString"></a><p class="decl"><code><span class="keyword">newtype</span> AlphaNumString</code></p><h3>Constructors</h3><ul><li><code><span class="ctor">AlphaNumString</span> String</code></li></ul>
+<a name="Arbitrary"></a><p class="decl"><code><span class="keyword">class</span> Arbitrary t</code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">arbitrary</span> <span class="syntax">::</span> Gen t</code></p></div>
+<a name="CoArbitrary"></a><p class="decl"><code><span class="keyword">class</span> CoArbitrary t</code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">coarbitrary</span> <span class="syntax">::</span> forall r. t -&gt; Gen r -&gt; Gen r</code></p></div>
+<a name="Result"></a><p class="decl"><code><span class="keyword">data</span> Result</code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Success</span></code></li><li><code><span class="ctor">Failed</span> String</code></li></ul>
+<a name="showResult"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showResult</span> <span class="syntax">::</span> Show Result</code></p>
+<a name="(&lt;?&gt;)"></a><p class="decl"><code><span class="ident">(&lt;?&gt;)</span> <span class="syntax">::</span> Boolean -&gt; String -&gt; Result</code></p>
+
+
+<a name="arbChar"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbChar</span> <span class="syntax">::</span> Arbitrary S.Char</code></p>
+<a name="coarbChar"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbChar</span> <span class="syntax">::</span> CoArbitrary S.Char</code></p>
+<a name="arbNumber"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbNumber</span> <span class="syntax">::</span> Arbitrary Number</code></p>
+<a name="coarbNumber"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbNumber</span> <span class="syntax">::</span> CoArbitrary Number</code></p>
+<a name="arbBoolean"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbBoolean</span> <span class="syntax">::</span> Arbitrary Boolean</code></p>
+<a name="coarbBoolean"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbBoolean</span> <span class="syntax">::</span> CoArbitrary Boolean</code></p>
+<a name="arbString"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbString</span> <span class="syntax">::</span> Arbitrary String</code></p>
+<a name="coarbString"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbString</span> <span class="syntax">::</span> CoArbitrary String</code></p>
+<a name="arbAlphaNumString"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbAlphaNumString</span> <span class="syntax">::</span> Arbitrary AlphaNumString</code></p>
+<a name="coarbAlphaNumString"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbAlphaNumString</span> <span class="syntax">::</span> CoArbitrary AlphaNumString</code></p>
+<a name="arbTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary a<span class="syntax">,</span> Arbitrary b<span class="syntax">) =&gt; </span>Arbitrary (Tuple a b)</code></p>
+<a name="coarbTuple"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbTuple</span> <span class="syntax">::</span> <span class="syntax">(</span>CoArbitrary a<span class="syntax">,</span> CoArbitrary b<span class="syntax">) =&gt; </span>CoArbitrary (Tuple a b)</code></p>
+<a name="arbEither"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbEither</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary a<span class="syntax">,</span> Arbitrary b<span class="syntax">) =&gt; </span>Arbitrary (Either a b)</code></p>
+<a name="coarbEither"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbEither</span> <span class="syntax">::</span> <span class="syntax">(</span>CoArbitrary a<span class="syntax">,</span> CoArbitrary b<span class="syntax">) =&gt; </span>CoArbitrary (Either a b)</code></p>
+<a name="arbMaybe"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbMaybe</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary a<span class="syntax">) =&gt; </span>Arbitrary (Maybe a)</code></p>
+<a name="coarbMaybe"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbMaybe</span> <span class="syntax">::</span> <span class="syntax">(</span>CoArbitrary a<span class="syntax">) =&gt; </span>CoArbitrary (Maybe a)</code></p>
+<a name="arbFunction"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbFunction</span> <span class="syntax">::</span> <span class="syntax">(</span>CoArbitrary a<span class="syntax">,</span> Arbitrary b<span class="syntax">) =&gt; </span>Arbitrary (a -&gt; b)</code></p>
+<a name="coarbFunction"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbFunction</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary a<span class="syntax">,</span> CoArbitrary b<span class="syntax">) =&gt; </span>CoArbitrary (a -&gt; b)</code></p>
+<a name="arbArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">arbArray</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary a<span class="syntax">) =&gt; </span>Arbitrary [a]</code></p>
+<a name="coarbArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">coarbArray</span> <span class="syntax">::</span> <span class="syntax">(</span>CoArbitrary a<span class="syntax">) =&gt; </span>CoArbitrary [a]</code></p>
+<a name="Testable"></a><p class="decl"><code><span class="keyword">class</span> Testable prop</code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">test</span> <span class="syntax">::</span> prop -&gt; Gen Result</code></p></div>
+<a name="testableResult"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">testableResult</span> <span class="syntax">::</span> Testable Result</code></p>
+<a name="testableBoolean"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">testableBoolean</span> <span class="syntax">::</span> Testable Boolean</code></p>
+<a name="testableFunction"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">testableFunction</span> <span class="syntax">::</span> <span class="syntax">(</span>Arbitrary t<span class="syntax">,</span> Testable prop<span class="syntax">) =&gt; </span>Testable (t -&gt; prop)</code></p>
+<a name="quickCheckPure"></a><p class="decl"><code><span class="ident">quickCheckPure</span> <span class="syntax">::</span> forall prop. (Testable prop) =&gt; Number -&gt; Number -&gt; prop -&gt; [Result]</code></p>
+
+<a name="QC"></a><p class="decl"><code><span class="keyword">type</span> QC a <span class="syntax">=</span> forall eff. Eff (err :: Exception, random :: Random, trace :: Trace | eff) a</code></p>
+<a name="quickCheck&#39;"></a><p class="decl"><code><span class="ident">quickCheck&#39;</span> <span class="syntax">::</span> forall prop. (Testable prop) =&gt; Number -&gt; prop -&gt; QC Unit</code></p>
+
+<a name="quickCheck"></a><p class="decl"><code><span class="ident">quickCheck</span> <span class="syntax">::</span> forall prop. (Testable prop) =&gt; prop -&gt; QC Unit</code></p>
+
+<a name="(===)"></a><p class="decl"><code><span class="ident">(===)</span> <span class="syntax">::</span> forall a b. (Eq a, Show a) =&gt; a -&gt; a -&gt; Result</code></p><p>Self-documenting equality assertion</p>
+
+<a name="(/==)"></a><p class="decl"><code><span class="ident">(/==)</span> <span class="syntax">::</span> forall a b. (Eq a, Show a) =&gt; a -&gt; a -&gt; Result</code></p><p>Self-documenting inequality assertion</p>
+
+<div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>

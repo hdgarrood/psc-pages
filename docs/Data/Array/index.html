@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Array</title></head><body><div id="header"><h1>Data.Array</h1></div>
+
+
+
+
+
+
+<a name="(!!)"></a><p class="decl"><code><span class="ident">(!!)</span> <span class="syntax">::</span> forall a. [a] -&gt; Number -&gt; Maybe a</code></p>
+
+<a name="snoc"></a><p class="decl"><code><span class="ident">snoc</span> <span class="syntax">::</span> forall a. [a] -&gt; a -&gt; [a]</code></p>
+<a name="singleton"></a><p class="decl"><code><span class="ident">singleton</span> <span class="syntax">::</span> forall a. a -&gt; [a]</code></p>
+
+<a name="head"></a><p class="decl"><code><span class="ident">head</span> <span class="syntax">::</span> forall a. [a] -&gt; Maybe a</code></p>
+
+
+<a name="last"></a><p class="decl"><code><span class="ident">last</span> <span class="syntax">::</span> forall a. [a] -&gt; Maybe a</code></p>
+
+
+
+<a name="tail"></a><p class="decl"><code><span class="ident">tail</span> <span class="syntax">::</span> forall a. [a] -&gt; Maybe [a]</code></p>
+
+
+<a name="init"></a><p class="decl"><code><span class="ident">init</span> <span class="syntax">::</span> forall a. [a] -&gt; Maybe [a]</code></p>
+
+
+<a name="null"></a><p class="decl"><code><span class="ident">null</span> <span class="syntax">::</span> forall a. [a] -&gt; Boolean</code></p>
+
+
+<a name="length"></a><p class="decl"><code><span class="ident">length</span> <span class="syntax">::</span> forall a. [a] -&gt; Number</code></p>
+<a name="findIndex"></a><p class="decl"><code><span class="ident">findIndex</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; Number</code></p>
+<a name="findLastIndex"></a><p class="decl"><code><span class="ident">findLastIndex</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; Number</code></p>
+<a name="elemIndex"></a><p class="decl"><code><span class="ident">elemIndex</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; a -&gt; [a] -&gt; Number</code></p>
+
+<a name="elemLastIndex"></a><p class="decl"><code><span class="ident">elemLastIndex</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; a -&gt; [a] -&gt; Number</code></p>
+
+<a name="append"></a><p class="decl"><code><span class="ident">append</span> <span class="syntax">::</span> forall a. [a] -&gt; [a] -&gt; [a]</code></p>
+<a name="concat"></a><p class="decl"><code><span class="ident">concat</span> <span class="syntax">::</span> forall a. [[a]] -&gt; [a]</code></p>
+<a name="reverse"></a><p class="decl"><code><span class="ident">reverse</span> <span class="syntax">::</span> forall a. [a] -&gt; [a]</code></p>
+<a name="drop"></a><p class="decl"><code><span class="ident">drop</span> <span class="syntax">::</span> forall a. Number -&gt; [a] -&gt; [a]</code></p>
+<a name="take"></a><p class="decl"><code><span class="ident">take</span> <span class="syntax">::</span> forall a. Number -&gt; [a] -&gt; [a]</code></p>
+
+<a name="slice"></a><p class="decl"><code><span class="ident">slice</span> <span class="syntax">::</span> forall a. Number -&gt; Number -&gt; [a] -&gt; [a]</code></p>
+<a name="insertAt"></a><p class="decl"><code><span class="ident">insertAt</span> <span class="syntax">::</span> forall a. Number -&gt; a -&gt; [a] -&gt; [a]</code></p>
+<a name="deleteAt"></a><p class="decl"><code><span class="ident">deleteAt</span> <span class="syntax">::</span> forall a. Number -&gt; Number -&gt; [a] -&gt; [a]</code></p>
+<a name="updateAt"></a><p class="decl"><code><span class="ident">updateAt</span> <span class="syntax">::</span> forall a. Number -&gt; a -&gt; [a] -&gt; [a]</code></p>
+<a name="deleteBy"></a><p class="decl"><code><span class="ident">deleteBy</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Boolean) -&gt; a -&gt; [a] -&gt; [a]</code></p>
+
+
+<a name="delete"></a><p class="decl"><code><span class="ident">delete</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; a -&gt; [a] -&gt; [a]</code></p>
+
+
+<a name="(\\)"></a><p class="decl"><code><span class="ident">(\\)</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; [a] -&gt; [a] -&gt; [a]</code></p>
+
+<a name="intersectBy"></a><p class="decl"><code><span class="ident">intersectBy</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Boolean) -&gt; [a] -&gt; [a] -&gt; [a]</code></p>
+
+
+
+<a name="intersect"></a><p class="decl"><code><span class="ident">intersect</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; [a] -&gt; [a] -&gt; [a]</code></p>
+
+<a name="concatMap"></a><p class="decl"><code><span class="ident">concatMap</span> <span class="syntax">::</span> forall a b. (a -&gt; [b]) -&gt; [a] -&gt; [b]</code></p>
+<a name="map"></a><p class="decl"><code><span class="ident">map</span> <span class="syntax">::</span> forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]</code></p>
+<a name="mapMaybe"></a><p class="decl"><code><span class="ident">mapMaybe</span> <span class="syntax">::</span> forall a b. (a -&gt; Maybe b) -&gt; [a] -&gt; [b]</code></p>
+
+<a name="catMaybes"></a><p class="decl"><code><span class="ident">catMaybes</span> <span class="syntax">::</span> forall a. [Maybe a] -&gt; [a]</code></p>
+
+<a name="filter"></a><p class="decl"><code><span class="ident">filter</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; [a]</code></p>
+<a name="range"></a><p class="decl"><code><span class="ident">range</span> <span class="syntax">::</span> Number -&gt; Number -&gt; [Number]</code></p>
+<a name="(..)"></a><p class="decl"><code><span class="ident">(..)</span> <span class="syntax">::</span> Number -&gt; Number -&gt; [Number]</code></p>
+
+<a name="zipWith"></a><p class="decl"><code><span class="ident">zipWith</span> <span class="syntax">::</span> forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]</code></p>
+<a name="nub"></a><p class="decl"><code><span class="ident">nub</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; [a] -&gt; [a]</code></p>
+
+<a name="nubBy"></a><p class="decl"><code><span class="ident">nubBy</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Boolean) -&gt; [a] -&gt; [a]</code></p>
+
+
+<a name="sort"></a><p class="decl"><code><span class="ident">sort</span> <span class="syntax">::</span> forall a. (Ord a) =&gt; [a] -&gt; [a]</code></p>
+
+<a name="sortBy"></a><p class="decl"><code><span class="ident">sortBy</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Ordering) -&gt; [a] -&gt; [a]</code></p>
+
+<a name="sortJS"></a><p class="decl"><code><span class="ident">sortJS</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Number) -&gt; [a] -&gt; [a]</code></p>
+<a name="group"></a><p class="decl"><code><span class="ident">group</span> <span class="syntax">::</span> forall a. (Eq a) =&gt; [a] -&gt; [[a]]</code></p>
+
+<a name="group&#39;"></a><p class="decl"><code><span class="ident">group&#39;</span> <span class="syntax">::</span> forall a. (Ord a) =&gt; [a] -&gt; [[a]]</code></p><p>Performs a sorting first.</p>
+
+<a name="groupBy"></a><p class="decl"><code><span class="ident">groupBy</span> <span class="syntax">::</span> forall a. (a -&gt; a -&gt; Boolean) -&gt; [a] -&gt; [[a]]</code></p>
+
+<a name="span"></a><p class="decl"><code><span class="ident">span</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; { rest :: [a], init :: [a] }</code></p>
+
+<a name="takeWhile"></a><p class="decl"><code><span class="ident">takeWhile</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; [a]</code></p>
+
+<a name="dropWhile"></a><p class="decl"><code><span class="ident">dropWhile</span> <span class="syntax">::</span> forall a. (a -&gt; Boolean) -&gt; [a] -&gt; [a]</code></p>
+
+<a name="functorArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorArray</span> <span class="syntax">::</span> Functor Prim.Array</code></p>
+<a name="applyArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyArray</span> <span class="syntax">::</span> Apply Prim.Array</code></p>
+<a name="applicativeArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeArray</span> <span class="syntax">::</span> Applicative Prim.Array</code></p>
+<a name="bindArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindArray</span> <span class="syntax">::</span> Bind Prim.Array</code></p>
+<a name="monadArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadArray</span> <span class="syntax">::</span> Monad Prim.Array</code></p>
+<a name="semigroupArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupArray</span> <span class="syntax">::</span> Semigroup [a]</code></p>
+<a name="altArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">altArray</span> <span class="syntax">::</span> Alt Prim.Array</code></p>
+<a name="plusArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">plusArray</span> <span class="syntax">::</span> Plus Prim.Array</code></p>
+<a name="alternativeArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">alternativeArray</span> <span class="syntax">::</span> Alternative Prim.Array</code></p>
+<a name="monadPlusArray"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadPlusArray</span> <span class="syntax">::</span> MonadPlus Prim.Array</code></p>
+<div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>
