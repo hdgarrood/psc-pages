@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 
 module Main where
 
@@ -14,8 +14,12 @@ import Data.Maybe (fromMaybe)
 import Data.Version (showVersion)
 import Data.Foldable (traverse_, for_)
 
-import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.IO as T
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
+import qualified Data.Text.IO as T
+
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TL
 
 import Options.Applicative
 
@@ -33,6 +37,8 @@ import qualified Text.Blaze.Html.Renderer.Text as H
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
+import Data.FileEmbed
+
 import qualified Cheapskate
 
 app :: ([FilePath], FilePath) -> IO ()
@@ -43,7 +49,9 @@ app (input, outputDir) = do
       hPutStrLn stderr $ show err
       exitFailure
     Right ms -> do
-      T.writeFile (outputDir </> "style.css") stylesheet
+      let stylesheetFile = outputDir </> "style.css"
+      mkdirp stylesheetFile
+      T.writeFile stylesheetFile stylesheet
       for_ (map snd ms) (renderModule outputDir)
       exitSuccess
   where
@@ -55,38 +63,13 @@ renderModule outputDir m@(P.Module moduleName _ exps) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml outputDir m
   mkdirp filename
-  T.writeFile filename html
-  where
-  mkdirp = createDirectoryIfMissing True . takeDirectory
+  TL.writeFile filename html
+
+mkdirp :: FilePath -> IO ()
+mkdirp = createDirectoryIfMissing True . takeDirectory
 
 stylesheet :: T.Text
-stylesheet = 
-  "body {\
-  \  font-family: sans-serif;\
-  \}\
-  \.decl {\
-  \  background-color: lightgray;\
-  \  padding: 2px;\
-  \}\
-  \.keyword {\
-  \  font-weight: body;\
-  \}\
-  \.ident {\
-  \  color: blue;\
-  \}\
-  \.syntax {\
-  \  color: gray;\
-  \}\
-  \#header, #footer {\
-  \  background-color: lightblue;\
-  \  padding: 5px;\
-  \}\
-  \h1, h2, h3, h4, h5, h6 {\
-  \  margin: 0;\
-  \}\
-  \.typeclass {\
-  \  margin-left: 10px;\
-  \}"
+stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
 
 filePathFor :: P.ModuleName -> FilePath
 filePathFor (P.ModuleName parts) = go parts
@@ -169,7 +152,7 @@ renderDeclaration _ (P.ExternDataDeclaration name kind) = do
     withClass "keyword" . text $ "data"  
     sp
     typeToHtml $ P.TypeConstructor (P.Qualified Nothing name)
-    withClass "syntax" " :: "
+    sp *> withClass "syntax" (text "::") <* sp
     text $ P.prettyPrintKind kind
 renderDeclaration _ (P.TypeSynonymDeclaration name args ty) = do
   let typeApp  = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
@@ -177,11 +160,11 @@ renderDeclaration _ (P.TypeSynonymDeclaration name args ty) = do
     withClass "keyword" . text $ "type" 
     sp
     typeToHtml typeApp
-    withClass "syntax" " = "
+    sp *> withClass "syntax" (text "=") <* sp
     typeToHtml ty
 renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
   para "decl" $ H.code $ do
-    withClass "syntax" (text "class") <* sp
+    withClass "keyword" (text "class") <* sp
     case implies of
       [] -> ""
       _ -> do withClass "syntax" $ text "("
@@ -204,7 +187,7 @@ renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
   renderClassMember _ = error "Invalid argument to renderClassMember."
 renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _) = do
   para "decl" $ H.code $ do
-    withClass "syntax" (text "instance") <* sp
+    withClass "keyword" (text "instance") <* sp
     withClass "ident" (text (show name)) <* sp
     withClass "syntax" (text "::") <* sp
     case constraints of

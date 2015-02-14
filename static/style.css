@@ -1,0 +1,42 @@
+body {
+    font-family: sans-serif;
+    margin: 0 10px;
+}
+
+.decl {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #c0c0c0;
+    padding: 2px 5px;
+    margin: 10px -10px;
+}
+
+.keyword, .syntax {
+    color: #a0a0a0;
+}
+
+.ident {
+    color: #2020f0;
+}
+
+#header, #footer {
+    background-color: #e0f0ff;
+    padding: 10px;
+}
+
+#header {
+    border-bottom: 2px solid lightblue;
+    margin: 0 -10px;
+}
+
+#footer {
+    border-top: 2px solid lightblue;
+    margin: 10px -10px -10px -10px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+}
+
+.typeclass .decl {
+    margin: 10px 0;
+}
