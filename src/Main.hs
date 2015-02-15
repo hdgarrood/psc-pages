@@ -169,10 +169,11 @@ renderDeclaration exps (P.DataDeclaration dtype name args ctors) = do
     withClass "keyword" . text $ show dtype  
     sp
     typeToHtml typeApp
-  H.h3 $ text "Constructors"
-  H.ul $ for_ exported $ \(ctor, tys) -> H.li . H.code $ do
-    withClass "ctor" . text $ P.runProperName ctor
-    for_ tys $ \ty -> sp *> typeToHtml ty
+  unless (null exported) $ do
+    H.h3 $ text "Constructors"
+    H.ul $ for_ exported $ \(ctor, tys) -> H.li . H.code $ do
+      let typeApp = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing ctor)) tys
+      typeToHtml typeApp
 renderDeclaration _ (P.ExternDataDeclaration name kind) = do
   para "decl" $ H.code $ do
     withClass "keyword" . text $ "data"  
@@ -200,8 +201,9 @@ renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
               withClass "syntax" $ text ") <= "
     let classApp  = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
     typeToHtml classApp
-  H.h3 $ text "Type Class Members"
-  H.div ! A.class_ "typeclass" $ mapM_ renderClassMember ds
+  unless (null ds) $ do
+    H.h3 $ text "Type Class Members"
+    H.div ! A.class_ "typeclass" $ mapM_ renderClassMember ds
   where
   renderClassMember :: P.Declaration -> H.Html
   renderClassMember (P.PositionedDeclaration _ _ d) = renderClassMember d
@@ -254,14 +256,86 @@ toTypeVar :: (String, Maybe P.Kind) -> P.Type
 toTypeVar (s, Nothing) = P.TypeVar s
 toTypeVar (s, Just k) = P.KindedType (P.TypeVar s) k
 
--- | TODO: improve this
 typeToHtml :: P.Type -> H.Html
-typeToHtml = H.toHtml . P.prettyPrintType . P.everywhereOnTypes dePrim
+typeToHtml = go 0 . P.everywhereOnTypes dePrim . P.everywhereOnTypesTopDown convertForAlls . P.everywhereOnTypes convert
   where
+  go :: Int -> P.Type -> H.Html
+  go _ P.TypeWildcard = withClass "syntax" (text "_")
+  go _ (P.TypeVar var) = withClass "ident" (text var)
+  go _ (P.PrettyPrintObject row) = do
+    withClass "syntax" (text "{") <* sp
+    rowToHtml row
+    sp *> withClass "syntax" (text "}")
+  go _ (P.PrettyPrintArray ty) = do
+    withClass "syntax" (text "[")
+    go 0 ty
+    withClass "syntax" (text "]")
+  go _ (P.TypeConstructor ctor) = withClass "ctor" (text (show ctor))
+  go n (P.ConstrainedType deps ty) = do
+    withClass "syntax" (text "(")
+    intercalateA_ (withClass "syntax" (text ",") <* sp) $ flip map deps $ \(pn, tys) -> do
+      withClass "ctor" (text (show pn)) *> sp
+      intercalateA_ sp (map (go 0) tys)
+    withClass "syntax" (text ")") *> sp
+    withClass "syntax" (text "=>") *> sp
+    go n ty
+  go _ P.REmpty = withClass "syntax" (text "()")
+  go _ row@P.RCons{} = do
+    withClass "syntax" (text "(")
+    rowToHtml row
+    withClass "syntax" (text ")")
+  go n (P.PrettyPrintFunction arg ret) | n < 1 = do
+    go (n + 1) arg *> sp
+    withClass "syntax" (text "->") *> sp
+    go 0 ret
+  go n (P.PrettyPrintForAll idents ty) | n < 1 = do
+    withClass "keyword" (text "forall") *> sp
+    intercalateA_ sp $ flip map idents $ withClass "ident" . text
+    withClass "syntax" (text ".") *> sp
+    go 0 ty
+  go n (P.TypeApp ty1 ty2) | n < 1 = do
+    go n ty1
+    sp
+    go (n + 1) ty2
+  go _ ty = do
+    withClass "syntax" (text "(")
+    go 0 ty
+    withClass "syntax" (text ")")
+
   dePrim ty@(P.TypeConstructor (P.Qualified _ name))
     | ty == P.tyBoolean || ty == P.tyNumber || ty == P.tyString =
       P.TypeConstructor $ P.Qualified Nothing name
   dePrim other = other
+  
+  convert (P.TypeApp (P.TypeApp f arg) ret) | f == P.tyFunction = P.PrettyPrintFunction arg ret
+  convert (P.TypeApp a el) | a == P.tyArray = P.PrettyPrintArray el
+  convert (P.TypeApp o r) | o == P.tyObject = P.PrettyPrintObject r
+  convert other = other
+  
+  convertForAlls (P.ForAll ident ty _) = go [ident] ty
+    where
+    go idents (P.ForAll ident' ty' _) = go (ident' : idents) ty'
+    go idents other = P.PrettyPrintForAll idents other
+  convertForAlls other = other
+
+rowToHtml :: P.Type -> H.Html
+rowToHtml = uncurry rowToHtml' . P.rowToList
+  where
+  rowToHtml' h t = do
+    headToHtml h
+    tailToHtml t    
+      
+  headToHtml = intercalateA_ (withClass "syntax" (text ",") <* sp) . map labelToHtml    
+      
+  labelToHtml (label, ty) = do
+    withClass "ident" (text label) <* sp
+    withClass "syntax" (text "::") <* sp
+    typeToHtml ty
+      
+  tailToHtml P.REmpty = return ()
+  tailToHtml other = do
+    sp *> withClass "syntax" (text "|") <* sp
+    typeToHtml other
 
 inputFiles :: Parser [FilePath]
 inputFiles = many . strArgument $

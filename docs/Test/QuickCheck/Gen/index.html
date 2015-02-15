@@ -9,67 +9,67 @@
 
 
 
-<a name="LCG"></a><p class="decl"><code><span class="keyword">type</span> LCG <span class="syntax">=</span> Number</code></p>
-<a name="Size"></a><p class="decl"><code><span class="keyword">type</span> Size <span class="syntax">=</span> Number</code></p>
-<a name="GenState"></a><p class="decl"><code><span class="keyword">type</span> GenState <span class="syntax">=</span> { size :: Size, newSeed :: LCG }</code></p>
-<a name="GenOut"></a><p class="decl"><code><span class="keyword">type</span> GenOut a <span class="syntax">=</span> { value :: a, state :: GenState }</code></p>
-<a name="Gen"></a><p class="decl"><code><span class="keyword">data</span> Gen a</code></p><h3>Constructors</h3><ul></ul>
-<a name="repeatable"></a><p class="decl"><code><span class="ident">repeatable</span> <span class="syntax">::</span> forall a b. (a -&gt; Gen b) -&gt; Gen (a -&gt; b)</code></p>
+<a name="LCG"></a><p class="decl"><code><span class="keyword">type</span> <span class="ctor">LCG</span> <span class="syntax">=</span> <span class="ctor">Number</span></code></p>
+<a name="Size"></a><p class="decl"><code><span class="keyword">type</span> <span class="ctor">Size</span> <span class="syntax">=</span> <span class="ctor">Number</span></code></p>
+<a name="GenState"></a><p class="decl"><code><span class="keyword">type</span> <span class="ctor">GenState</span> <span class="syntax">=</span> <span class="syntax">{</span> <span class="ident">newSeed</span> <span class="syntax">::</span> <span class="ctor">LCG</span><span class="syntax">,</span> <span class="ident">size</span> <span class="syntax">::</span> <span class="ctor">Size</span> <span class="syntax">}</span></code></p>
+<a name="GenOut"></a><p class="decl"><code><span class="keyword">type</span> <span class="ctor">GenOut</span> <span class="ident">a</span> <span class="syntax">=</span> <span class="syntax">{</span> <span class="ident">state</span> <span class="syntax">::</span> <span class="ctor">GenState</span><span class="syntax">,</span> <span class="ident">value</span> <span class="syntax">::</span> <span class="ident">a</span> <span class="syntax">}</span></code></p>
+<a name="Gen"></a><p class="decl"><code><span class="keyword">data</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
+<a name="repeatable"></a><p class="decl"><code><span class="ident">repeatable</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span> <span class="ident">b</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">b</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="syntax">(</span><span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ident">b</span><span class="syntax">)</span></code></p>
 
-<a name="stateful"></a><p class="decl"><code><span class="ident">stateful</span> <span class="syntax">::</span> forall a. (GenState -&gt; Gen a) -&gt; Gen a</code></p>
+<a name="stateful"></a><p class="decl"><code><span class="ident">stateful</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">GenState</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="variant"></a><p class="decl"><code><span class="ident">variant</span> <span class="syntax">::</span> forall a. LCG -&gt; Gen a -&gt; Gen a</code></p>
+<a name="variant"></a><p class="decl"><code><span class="ident">variant</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">LCG</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="sized"></a><p class="decl"><code><span class="ident">sized</span> <span class="syntax">::</span> forall a. (Size -&gt; Gen a) -&gt; Gen a</code></p>
+<a name="sized"></a><p class="decl"><code><span class="ident">sized</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Size</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="resize"></a><p class="decl"><code><span class="ident">resize</span> <span class="syntax">::</span> forall a. Size -&gt; Gen a -&gt; Gen a</code></p>
+<a name="resize"></a><p class="decl"><code><span class="ident">resize</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Size</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="choose"></a><p class="decl"><code><span class="ident">choose</span> <span class="syntax">::</span> Number -&gt; Number -&gt; Gen Number</code></p>
+<a name="choose"></a><p class="decl"><code><span class="ident">choose</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ctor">Number</span></code></p>
 
-<a name="chooseInt"></a><p class="decl"><code><span class="ident">chooseInt</span> <span class="syntax">::</span> Number -&gt; Number -&gt; Gen Number</code></p>
+<a name="chooseInt"></a><p class="decl"><code><span class="ident">chooseInt</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ctor">Number</span></code></p>
 
-<a name="oneOf"></a><p class="decl"><code><span class="ident">oneOf</span> <span class="syntax">::</span> forall a. Gen a -&gt; [Gen a] -&gt; Gen a</code></p>
+<a name="oneOf"></a><p class="decl"><code><span class="ident">oneOf</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="frequency"></a><p class="decl"><code><span class="ident">frequency</span> <span class="syntax">::</span> forall a. Tuple Number (Gen a) -&gt; [Tuple Number (Gen a)] -&gt; Gen a</code></p>
+<a name="frequency"></a><p class="decl"><code><span class="ident">frequency</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Tuple</span> <span class="ctor">Number</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ctor">Tuple</span> <span class="ctor">Number</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="arrayOf"></a><p class="decl"><code><span class="ident">arrayOf</span> <span class="syntax">::</span> forall a. Gen a -&gt; Gen [a]</code></p>
+<a name="arrayOf"></a><p class="decl"><code><span class="ident">arrayOf</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p>
 
-<a name="arrayOf1"></a><p class="decl"><code><span class="ident">arrayOf1</span> <span class="syntax">::</span> forall a. Gen a -&gt; Gen (Tuple a [a])</code></p>
+<a name="arrayOf1"></a><p class="decl"><code><span class="ident">arrayOf1</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="syntax">(</span><span class="ctor">Tuple</span> <span class="ident">a</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span><span class="syntax">)</span></code></p>
 
-<a name="vectorOf"></a><p class="decl"><code><span class="ident">vectorOf</span> <span class="syntax">::</span> forall a. Number -&gt; Gen a -&gt; Gen [a]</code></p>
+<a name="vectorOf"></a><p class="decl"><code><span class="ident">vectorOf</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p>
 
-<a name="elements"></a><p class="decl"><code><span class="ident">elements</span> <span class="syntax">::</span> forall a. a -&gt; [a] -&gt; Gen a</code></p>
+<a name="elements"></a><p class="decl"><code><span class="ident">elements</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="runGen"></a><p class="decl"><code><span class="ident">runGen</span> <span class="syntax">::</span> forall a. Gen a -&gt; GenState -&gt; GenOut a</code></p>
+<a name="runGen"></a><p class="decl"><code><span class="ident">runGen</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">GenState</span> <span class="syntax">-&gt;</span> <span class="ctor">GenOut</span> <span class="ident">a</span></code></p>
 
-<a name="evalGen"></a><p class="decl"><code><span class="ident">evalGen</span> <span class="syntax">::</span> forall a. Gen a -&gt; GenState -&gt; a</code></p>
+<a name="evalGen"></a><p class="decl"><code><span class="ident">evalGen</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">GenState</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>
 
-<a name="sample"></a><p class="decl"><code><span class="ident">sample</span> <span class="syntax">::</span> forall r a. Size -&gt; Gen a -&gt; [a]</code></p>
+<a name="sample"></a><p class="decl"><code><span class="ident">sample</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Size</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p>
 
-<a name="showSample&#39;"></a><p class="decl"><code><span class="ident">showSample&#39;</span> <span class="syntax">::</span> forall r a. (Show a) =&gt; Size -&gt; Gen a -&gt; Eff (trace :: Trace | r) Unit</code></p>
+<a name="showSample&#39;"></a><p class="decl"><code><span class="ident">showSample&#39;</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Show</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ctor">Size</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Eff</span> <span class="syntax">(</span><span class="ident">trace</span> <span class="syntax">::</span> <span class="ctor">Trace</span> <span class="syntax">|</span> <span class="ident">r</span><span class="syntax">)</span> <span class="ctor">Unit</span></code></p>
 
-<a name="showSample"></a><p class="decl"><code><span class="ident">showSample</span> <span class="syntax">::</span> forall r a. (Show a) =&gt; Gen a -&gt; Eff (trace :: Trace | r) Unit</code></p>
+<a name="showSample"></a><p class="decl"><code><span class="ident">showSample</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Show</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Eff</span> <span class="syntax">(</span><span class="ident">trace</span> <span class="syntax">::</span> <span class="ctor">Trace</span> <span class="syntax">|</span> <span class="ident">r</span><span class="syntax">)</span> <span class="ctor">Unit</span></code></p>
 
-<a name="lcgM"></a><p class="decl"><code><span class="ident">lcgM</span> <span class="syntax">::</span> Number</code></p><pre><code>
+<a name="lcgM"></a><p class="decl"><code><span class="ident">lcgM</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p><pre><code>
  Magic Numbers
 
 </code></pre>
-<a name="lcgC"></a><p class="decl"><code><span class="ident">lcgC</span> <span class="syntax">::</span> Number</code></p>
+<a name="lcgC"></a><p class="decl"><code><span class="ident">lcgC</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p>
 
-<a name="lcgN"></a><p class="decl"><code><span class="ident">lcgN</span> <span class="syntax">::</span> Number</code></p>
+<a name="lcgN"></a><p class="decl"><code><span class="ident">lcgN</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p>
 
-<a name="lcgNext"></a><p class="decl"><code><span class="ident">lcgNext</span> <span class="syntax">::</span> Number -&gt; Number</code></p>
+<a name="lcgNext"></a><p class="decl"><code><span class="ident">lcgNext</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span></code></p>
 
-<a name="lcgStep"></a><p class="decl"><code><span class="ident">lcgStep</span> <span class="syntax">::</span> Gen Number</code></p>
+<a name="lcgStep"></a><p class="decl"><code><span class="ident">lcgStep</span> <span class="syntax">::</span> <span class="ctor">Gen</span> <span class="ctor">Number</span></code></p>
 
-<a name="uniform"></a><p class="decl"><code><span class="ident">uniform</span> <span class="syntax">::</span> Gen Number</code></p>
+<a name="uniform"></a><p class="decl"><code><span class="ident">uniform</span> <span class="syntax">::</span> <span class="ctor">Gen</span> <span class="ctor">Number</span></code></p>
 
-<a name="float32ToInt32"></a><p class="decl"><code><span class="ident">float32ToInt32</span> <span class="syntax">::</span> Number -&gt; Number</code></p>
-<a name="perturbGen"></a><p class="decl"><code><span class="ident">perturbGen</span> <span class="syntax">::</span> forall a. Number -&gt; Gen a -&gt; Gen a</code></p>
+<a name="float32ToInt32"></a><p class="decl"><code><span class="ident">float32ToInt32</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span></code></p>
+<a name="perturbGen"></a><p class="decl"><code><span class="ident">perturbGen</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Gen</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Gen</span> <span class="ident">a</span></code></p>
 
-<a name="functorGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorGen</span> <span class="syntax">::</span> Functor Gen</code></p>
-<a name="applyGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyGen</span> <span class="syntax">::</span> Apply Gen</code></p>
-<a name="applicativeGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeGen</span> <span class="syntax">::</span> Applicative Gen</code></p>
-<a name="bindGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindGen</span> <span class="syntax">::</span> Bind Gen</code></p>
-<a name="monadGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadGen</span> <span class="syntax">::</span> Monad Gen</code></p>
+<a name="functorGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorGen</span> <span class="syntax">::</span> <span class="ctor">Functor</span> <span class="ctor">Gen</span></code></p>
+<a name="applyGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyGen</span> <span class="syntax">::</span> <span class="ctor">Apply</span> <span class="ctor">Gen</span></code></p>
+<a name="applicativeGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeGen</span> <span class="syntax">::</span> <span class="ctor">Applicative</span> <span class="ctor">Gen</span></code></p>
+<a name="bindGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindGen</span> <span class="syntax">::</span> <span class="ctor">Bind</span> <span class="ctor">Gen</span></code></p>
+<a name="monadGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadGen</span> <span class="syntax">::</span> <span class="ctor">Monad</span> <span class="ctor">Gen</span></code></p>
 <div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>

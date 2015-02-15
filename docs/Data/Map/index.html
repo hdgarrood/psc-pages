@@ -6,79 +6,79 @@
 
 
 
-<a name="Map"></a><p class="decl"><code><span class="keyword">data</span> Map k v</code></p><h3>Constructors</h3><ul></ul>
-<a name="eqMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqMap</span> <span class="syntax">::</span> <span class="syntax">(</span>P.Eq k<span class="syntax">,</span> P.Eq v<span class="syntax">) =&gt; </span>P.Eq (Map k v)</code></p>
-<a name="showMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showMap</span> <span class="syntax">::</span> <span class="syntax">(</span>P.Show k<span class="syntax">,</span> P.Show v<span class="syntax">) =&gt; </span>P.Show (Map k v)</code></p>
-<a name="semigroupMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupMap</span> <span class="syntax">::</span> <span class="syntax">(</span>P.Ord k<span class="syntax">) =&gt; </span>P.Semigroup (Map k v)</code></p>
-<a name="monoidMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidMap</span> <span class="syntax">::</span> <span class="syntax">(</span>P.Ord k<span class="syntax">) =&gt; </span>Monoid (Map k v)</code></p>
-<a name="functorMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorMap</span> <span class="syntax">::</span> P.Functor (Map k)</code></p>
-<a name="foldableMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">foldableMap</span> <span class="syntax">::</span> Foldable (Map k)</code></p>
-<a name="traversableMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">traversableMap</span> <span class="syntax">::</span> <span class="syntax">(</span>P.Ord k<span class="syntax">) =&gt; </span>Traversable (Map k)</code></p>
-<a name="showTree"></a><p class="decl"><code><span class="ident">showTree</span> <span class="syntax">::</span> forall k v. (P.Show k, P.Show v) =&gt; Map k v -&gt; String</code></p>
+<a name="Map"></a><p class="decl"><code><span class="keyword">data</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+<a name="eqMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqMap</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">P.Eq</span> <span class="ident">k</span><span class="syntax">,</span> <span class="ctor">P.Eq</span> <span class="ident">v</span><span class="syntax">) =&gt; </span><span class="ctor">P.Eq</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span></code></p>
+<a name="showMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showMap</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">P.Show</span> <span class="ident">k</span><span class="syntax">,</span> <span class="ctor">P.Show</span> <span class="ident">v</span><span class="syntax">) =&gt; </span><span class="ctor">P.Show</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span></code></p>
+<a name="semigroupMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupMap</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">) =&gt; </span><span class="ctor">P.Semigroup</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span></code></p>
+<a name="monoidMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidMap</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">) =&gt; </span><span class="ctor">Monoid</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span></code></p>
+<a name="functorMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorMap</span> <span class="syntax">::</span> <span class="ctor">P.Functor</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span><span class="syntax">)</span></code></p>
+<a name="foldableMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">foldableMap</span> <span class="syntax">::</span> <span class="ctor">Foldable</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span><span class="syntax">)</span></code></p>
+<a name="traversableMap"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">traversableMap</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">) =&gt; </span><span class="ctor">Traversable</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span><span class="syntax">)</span></code></p>
+<a name="showTree"></a><p class="decl"><code><span class="ident">showTree</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Show</span> <span class="ident">k</span><span class="syntax">,</span> <span class="ctor">P.Show</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">String</span></code></p>
 
 
 
-<a name="empty"></a><p class="decl"><code><span class="ident">empty</span> <span class="syntax">::</span> forall k v. Map k v</code></p>
+<a name="empty"></a><p class="decl"><code><span class="ident">empty</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
 
-<a name="isEmpty"></a><p class="decl"><code><span class="ident">isEmpty</span> <span class="syntax">::</span> forall k v. Map k v -&gt; Boolean</code></p>
-
-
-<a name="singleton"></a><p class="decl"><code><span class="ident">singleton</span> <span class="syntax">::</span> forall k v. k -&gt; v -&gt; Map k v</code></p>
-
-<a name="checkValid"></a><p class="decl"><code><span class="ident">checkValid</span> <span class="syntax">::</span> forall k v. Map k v -&gt; Boolean</code></p>
-
-<a name="lookup"></a><p class="decl"><code><span class="ident">lookup</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; k -&gt; Map k v -&gt; Maybe v</code></p>
+<a name="isEmpty"></a><p class="decl"><code><span class="ident">isEmpty</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>
 
 
+<a name="singleton"></a><p class="decl"><code><span class="ident">singleton</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="ident">v</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
 
+<a name="checkValid"></a><p class="decl"><code><span class="ident">checkValid</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>
 
-
-
-
-
-
-<a name="member"></a><p class="decl"><code><span class="ident">member</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; k -&gt; Map k v -&gt; Boolean</code></p>
-
-<a name="TreeContext"></a><p class="decl"><code><span class="keyword">data</span> TreeContext k v</code></p><h3>Constructors</h3><ul></ul>
-<a name="fromZipper"></a><p class="decl"><code><span class="ident">fromZipper</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; [TreeContext k v] -&gt; Map k v -&gt; Map k v</code></p>
+<a name="lookup"></a><p class="decl"><code><span class="ident">lookup</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Maybe</span> <span class="ident">v</span></code></p>
 
 
 
 
 
 
-<a name="KickUp"></a><p class="decl"><code><span class="keyword">data</span> KickUp k v</code></p><h3>Constructors</h3><ul></ul>
-<a name="insert"></a><p class="decl"><code><span class="ident">insert</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; k -&gt; v -&gt; Map k v -&gt; Map k v</code></p>
-
-<a name="delete"></a><p class="decl"><code><span class="ident">delete</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; k -&gt; Map k v -&gt; Map k v</code></p>
-
-<a name="alter"></a><p class="decl"><code><span class="ident">alter</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; (Maybe v -&gt; Maybe v) -&gt; k -&gt; Map k v -&gt; Map k v</code></p>
-
-<a name="update"></a><p class="decl"><code><span class="ident">update</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; (v -&gt; Maybe v) -&gt; k -&gt; Map k v -&gt; Map k v</code></p>
-
-<a name="toList"></a><p class="decl"><code><span class="ident">toList</span> <span class="syntax">::</span> forall k v. Map k v -&gt; [Tuple k v]</code></p>
 
 
 
-<a name="fromList"></a><p class="decl"><code><span class="ident">fromList</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; [Tuple k v] -&gt; Map k v</code></p>
+<a name="member"></a><p class="decl"><code><span class="ident">member</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>
 
-<a name="keys"></a><p class="decl"><code><span class="ident">keys</span> <span class="syntax">::</span> forall k v. Map k v -&gt; [k]</code></p>
-
-
-
-<a name="values"></a><p class="decl"><code><span class="ident">values</span> <span class="syntax">::</span> forall k v. Map k v -&gt; [v]</code></p>
+<a name="TreeContext"></a><p class="decl"><code><span class="keyword">data</span> <span class="ctor">TreeContext</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+<a name="fromZipper"></a><p class="decl"><code><span class="ident">fromZipper</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">[</span><span class="ctor">TreeContext</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
 
 
 
-<a name="unionWith"></a><p class="decl"><code><span class="ident">unionWith</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; (v -&gt; v -&gt; v) -&gt; Map k v -&gt; Map k v -&gt; Map k v</code></p><pre><code> Computes the union of two maps, except that when a key exists in both maps, its value in the result
+
+
+
+<a name="KickUp"></a><p class="decl"><code><span class="keyword">data</span> <span class="ctor">KickUp</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+<a name="insert"></a><p class="decl"><code><span class="ident">insert</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="ident">v</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+
+<a name="delete"></a><p class="decl"><code><span class="ident">delete</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+
+<a name="alter"></a><p class="decl"><code><span class="ident">alter</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="syntax">(</span><span class="ctor">Maybe</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Maybe</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+
+<a name="update"></a><p class="decl"><code><span class="ident">update</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="ident">v</span> <span class="syntax">-&gt;</span> <span class="ctor">Maybe</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">k</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+
+<a name="toList"></a><p class="decl"><code><span class="ident">toList</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ctor">Tuple</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">]</span></code></p>
+
+
+
+<a name="fromList"></a><p class="decl"><code><span class="ident">fromList</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">[</span><span class="ctor">Tuple</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
+
+<a name="keys"></a><p class="decl"><code><span class="ident">keys</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">k</span><span class="syntax">]</span></code></p>
+
+
+
+<a name="values"></a><p class="decl"><code><span class="ident">values</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">v</span><span class="syntax">]</span></code></p>
+
+
+
+<a name="unionWith"></a><p class="decl"><code><span class="ident">unionWith</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="ident">v</span> <span class="syntax">-&gt;</span> <span class="ident">v</span> <span class="syntax">-&gt;</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p><pre><code> Computes the union of two maps, except that when a key exists in both maps, its value in the result
  is computed by combining them with the supplied function.
 </code></pre>
-<a name="union"></a><p class="decl"><code><span class="ident">union</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; Map k v -&gt; Map k v -&gt; Map k v</code></p>
+<a name="union"></a><p class="decl"><code><span class="ident">union</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
 
-<a name="unions"></a><p class="decl"><code><span class="ident">unions</span> <span class="syntax">::</span> forall k v. (P.Ord k) =&gt; [Map k v] -&gt; Map k v</code></p>
+<a name="unions"></a><p class="decl"><code><span class="ident">unions</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">P.Ord</span> <span class="ident">k</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">[</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span></code></p>
 
-<a name="map"></a><p class="decl"><code><span class="ident">map</span> <span class="syntax">::</span> forall k a b. (a -&gt; b) -&gt; Map k a -&gt; Map k b</code></p>
+<a name="map"></a><p class="decl"><code><span class="ident">map</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">a</span> <span class="ident">b</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ident">b</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">b</span></code></p>
 
-<a name="size"></a><p class="decl"><code><span class="ident">size</span> <span class="syntax">::</span> forall k v. Map k v -&gt; Number</code></p>
+<a name="size"></a><p class="decl"><code><span class="ident">size</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">Map</span> <span class="ident">k</span> <span class="ident">v</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span></code></p>
 
 <div id="footer"><small>Generated by psc-pages 0.1.0.0</small></div></body></html>

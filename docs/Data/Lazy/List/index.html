@@ -4,33 +4,33 @@
 
 
 
-<a name="List"></a><p class="decl"><code><span class="keyword">data</span> List a</code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Nil</span></code></li><li><code><span class="ctor">Cons</span> a Lazy (List a)</code></li></ul>
-<a name="eqList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqList</span> <span class="syntax">::</span> <span class="syntax">(</span>Eq a<span class="syntax">) =&gt; </span>Eq (List a)</code></p>
-<a name="showList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showList</span> <span class="syntax">::</span> <span class="syntax">(</span>Show a<span class="syntax">) =&gt; </span>Show (List a)</code></p>
-<a name="showItems"></a><p class="decl"><code><span class="ident">showItems</span> <span class="syntax">::</span> [String] -&gt; String</code></p>
-<a name="semigroupList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupList</span> <span class="syntax">::</span> Semigroup (List a)</code></p>
-<a name="(&lt;.&gt;)"></a><p class="decl"><code><span class="ident">(&lt;.&gt;)</span> <span class="syntax">::</span> forall a. List a -&gt; Lazy (List a) -&gt; List a</code></p>
+<a name="List"></a><p class="decl"><code><span class="keyword">data</span> <span class="ctor">List</span> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Nil</span></code></li><li><code><span class="ctor">Cons</span> <span class="ident">a</span> <span class="syntax">(</span><span class="ctor">Lazy</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span><span class="syntax">)</span></code></li></ul>
+<a name="eqList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqList</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">Eq</span> <span class="ident">a</span><span class="syntax">) =&gt; </span><span class="ctor">Eq</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span></code></p>
+<a name="showList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showList</span> <span class="syntax">::</span> <span class="syntax">(</span><span class="ctor">Show</span> <span class="ident">a</span><span class="syntax">) =&gt; </span><span class="ctor">Show</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span></code></p>
+<a name="showItems"></a><p class="decl"><code><span class="ident">showItems</span> <span class="syntax">::</span> <span class="syntax">[</span><span class="ctor">String</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">String</span></code></p>
+<a name="semigroupList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupList</span> <span class="syntax">::</span> <span class="ctor">Semigroup</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span></code></p>
+<a name="(&lt;.&gt;)"></a><p class="decl"><code><span class="ident">(&lt;.&gt;)</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">Lazy</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">List</span> <span class="ident">a</span></code></p>
 
 
-<a name="monoidList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidList</span> <span class="syntax">::</span> Monoid (List a)</code></p>
-<a name="functorList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorList</span> <span class="syntax">::</span> Functor List</code></p>
-<a name="applyList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyList</span> <span class="syntax">::</span> Apply List</code></p>
-<a name="applicativeList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeList</span> <span class="syntax">::</span> Applicative List</code></p>
-<a name="bindList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindList</span> <span class="syntax">::</span> Bind List</code></p>
-<a name="monadList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadList</span> <span class="syntax">::</span> Monad List</code></p>
-<a name="toArray"></a><p class="decl"><code><span class="ident">toArray</span> <span class="syntax">::</span> forall a. List a -&gt; [a]</code></p>
+<a name="monoidList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidList</span> <span class="syntax">::</span> <span class="ctor">Monoid</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span></code></p>
+<a name="functorList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorList</span> <span class="syntax">::</span> <span class="ctor">Functor</span> <span class="ctor">List</span></code></p>
+<a name="applyList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applyList</span> <span class="syntax">::</span> <span class="ctor">Apply</span> <span class="ctor">List</span></code></p>
+<a name="applicativeList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">applicativeList</span> <span class="syntax">::</span> <span class="ctor">Applicative</span> <span class="ctor">List</span></code></p>
+<a name="bindList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">bindList</span> <span class="syntax">::</span> <span class="ctor">Bind</span> <span class="ctor">List</span></code></p>
+<a name="monadList"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monadList</span> <span class="syntax">::</span> <span class="ctor">Monad</span> <span class="ctor">List</span></code></p>
+<a name="toArray"></a><p class="decl"><code><span class="ident">toArray</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p>
 
 
-<a name="fromArray"></a><p class="decl"><code><span class="ident">fromArray</span> <span class="syntax">::</span> forall a. [a] -&gt; List a</code></p>
+<a name="fromArray"></a><p class="decl"><code><span class="ident">fromArray</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <span class="ctor">List</span> <span class="ident">a</span></code></p>
 
 
-<a name="repeat"></a><p class="decl"><code><span class="ident">repeat</span> <span class="syntax">::</span> forall a. a -&gt; List a</code></p>
+<a name="repeat"></a><p class="decl"><code><span class="ident">repeat</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ctor">List</span> <span class="ident">a</span></code></p>
 
-<a name="take"></a><p class="decl"><code><span class="ident">take</span> <span class="syntax">::</span> forall a. Number -&gt; List a -&gt; List a</code></p>
+<a name="take"></a><p class="decl"><code><span class="ident">take</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">List</span> <span class="ident">a</span></code></p>
 
 
 
-<a name="drop"></a><p class="decl"><code><span class="ident">drop</span> <span class="syntax">::</span> forall a. Number -&gt; List a -&gt; List a</code></p>
+<a name="drop"></a><p class="decl"><code><span class="ident">drop</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><span class="ctor">List</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ctor">List</span> <span class="ident">a</span></code></p>
 
 
 
