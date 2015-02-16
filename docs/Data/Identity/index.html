@@ -1,9 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Identity</title></head><body><div id="header"><h1>Data.Identity</h1></div>
-
-
-
-<a name="Identity"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span></code></li></ul>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Identity</title></head><body><div id="header"><h1>Data.Identity</h1></div><a name="Identity"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span></code></li></ul>
 <a name="runIdentity"></a><p class="decl"><code><span class="ident">runIdentity</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>
 
 <a name="eqIdentity"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqIdentity</span> <span class="syntax">::</span> <span class="syntax">(</span><a href="../../Prelude/index.html#Eq"><span class="ctor">Eq</span></a> <span class="ident">a</span><span class="syntax">) =&gt; </span><a href="../../Prelude/index.html#Eq"><span class="ctor">Eq</span></a> <span class="syntax">(</span><a href="#Identity"><span class="ctor">Identity</span></a> <span class="ident">a</span><span class="syntax">)</span></code></p>

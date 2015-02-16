@@ -206,7 +206,7 @@ letterPageHtml c bs = do
   
 moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
 moduleToHtml bookmarks (P.Module moduleName ds exps) = 
-  template (filePathFor moduleName) (show moduleName) $ for_ ds (declToHtml exps)
+  template (filePathFor moduleName) (show moduleName) $ for_ (filter (P.isExported exps) ds) (declToHtml exps)
   where
   declToHtml :: Maybe [P.DeclarationRef] -> P.Declaration -> H.Html
   declToHtml exps decl = do

@@ -1,19 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Test.QuickCheck</title></head><body><div id="header"><h1>Test.QuickCheck</h1></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<a name="AlphaNumString"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#AlphaNumString"><span class="ctor">AlphaNumString</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#AlphaNumString"><span class="ctor">AlphaNumString</span></a> <span class="ctor">String</span></code></li></ul>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Test.QuickCheck</title></head><body><div id="header"><h1>Test.QuickCheck</h1></div><a name="AlphaNumString"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#AlphaNumString"><span class="ctor">AlphaNumString</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#AlphaNumString"><span class="ctor">AlphaNumString</span></a> <span class="ctor">String</span></code></li></ul>
 <a name="Arbitrary"></a><p class="decl"><code><span class="keyword">class</span> <a href="#Arbitrary"><span class="ctor">Arbitrary</span></a> <span class="ident">t</span></code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">arbitrary</span> <span class="syntax">::</span> <a href="Gen/index.html#Gen"><span class="ctor">Gen</span></a> <span class="ident">t</span></code></p></div>
 <a name="CoArbitrary"></a><p class="decl"><code><span class="keyword">class</span> <a href="#CoArbitrary"><span class="ctor">CoArbitrary</span></a> <span class="ident">t</span></code></p><h3>Type Class Members</h3><div class="typeclass"><p class="decl"><code><span class="ident">coarbitrary</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span><span class="syntax">.</span> <span class="ident">t</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><a href="Gen/index.html#Gen"><span class="ctor">Gen</span></a> <span class="ident">r</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="Gen/index.html#Gen"><span class="ctor">Gen</span></a> <span class="ident">r</span></code></p></div>
 <a name="Result"></a><p class="decl"><code><span class="keyword">data</span> <a href="#Result"><span class="ctor">Result</span></a></code></p><h3>Constructors</h3><ul><li><code><span class="ctor">Success</span></code></li><li><code><span class="ctor">Failed</span> <span class="ctor">String</span></code></li></ul>

@@ -1,15 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Test.QuickCheck.Gen</title></head><body><div id="header"><h1>Test.QuickCheck.Gen</h1></div>
-
-
-
-
-
-
-
-
-
-<a name="LCG"></a><p class="decl"><code><span class="keyword">type</span> <a href="#LCG"><span class="ctor">LCG</span></a> <span class="syntax">=</span> <span class="ctor">Number</span></code></p>
+<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Test.QuickCheck.Gen</title></head><body><div id="header"><h1>Test.QuickCheck.Gen</h1></div><a name="LCG"></a><p class="decl"><code><span class="keyword">type</span> <a href="#LCG"><span class="ctor">LCG</span></a> <span class="syntax">=</span> <span class="ctor">Number</span></code></p>
 <a name="Size"></a><p class="decl"><code><span class="keyword">type</span> <a href="#Size"><span class="ctor">Size</span></a> <span class="syntax">=</span> <span class="ctor">Number</span></code></p>
 <a name="GenState"></a><p class="decl"><code><span class="keyword">type</span> <a href="#GenState"><span class="ctor">GenState</span></a> <span class="syntax">=</span> <span class="syntax">{</span> <span class="ident">newSeed</span> <span class="syntax">::</span> <a href="#LCG"><span class="ctor">LCG</span></a><span class="syntax">,</span> <span class="ident">size</span> <span class="syntax">::</span> <a href="#Size"><span class="ctor">Size</span></a> <span class="syntax">}</span></code></p>
 <a name="GenOut"></a><p class="decl"><code><span class="keyword">type</span> <a href="#GenOut"><span class="ctor">GenOut</span></a> <span class="ident">a</span> <span class="syntax">=</span> <span class="syntax">{</span> <span class="ident">state</span> <span class="syntax">::</span> <a href="#GenState"><span class="ctor">GenState</span></a><span class="syntax">,</span> <span class="ident">value</span> <span class="syntax">::</span> <span class="ident">a</span> <span class="syntax">}</span></code></p>
@@ -44,27 +34,12 @@
 
 <a name="evalGen"></a><p class="decl"><code><span class="ident">evalGen</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="#GenState"><span class="ctor">GenState</span></a> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>
 
-<a name="sample"></a><p class="decl"><code><span class="ident">sample</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <a href="#Size"><span class="ctor">Size</span></a> <span class="syntax">-&gt;</span> <span class="syntax">(</span><a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p>
-
 <a name="showSample&#39;"></a><p class="decl"><code><span class="ident">showSample&#39;</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="../../../Prelude/index.html#Show"><span class="ctor">Show</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <a href="#Size"><span class="ctor">Size</span></a> <span class="syntax">-&gt;</span> <span class="syntax">(</span><a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="../../../Control/Monad/Eff/index.html#Eff"><span class="ctor">Eff</span></a> <span class="syntax">(</span><span class="ident">trace</span> <span class="syntax">::</span> <a href="../../../Debug/Trace/index.html#Trace"><span class="ctor">Trace</span></a> <span class="syntax">|</span> <span class="ident">r</span><span class="syntax">)</span> <a href="../../../Prelude/index.html#Unit"><span class="ctor">Unit</span></a></code></p>
 
 <a name="showSample"></a><p class="decl"><code><span class="ident">showSample</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">r</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="../../../Prelude/index.html#Show"><span class="ctor">Show</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="syntax">(</span><a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="../../../Control/Monad/Eff/index.html#Eff"><span class="ctor">Eff</span></a> <span class="syntax">(</span><span class="ident">trace</span> <span class="syntax">::</span> <a href="../../../Debug/Trace/index.html#Trace"><span class="ctor">Trace</span></a> <span class="syntax">|</span> <span class="ident">r</span><span class="syntax">)</span> <a href="../../../Prelude/index.html#Unit"><span class="ctor">Unit</span></a></code></p>
 
-<a name="lcgM"></a><p class="decl"><code><span class="ident">lcgM</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p><pre><code>
- Magic Numbers
-
-</code></pre>
-<a name="lcgC"></a><p class="decl"><code><span class="ident">lcgC</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p>
-
-<a name="lcgN"></a><p class="decl"><code><span class="ident">lcgN</span> <span class="syntax">::</span> <span class="ctor">Number</span></code></p>
-
-<a name="lcgNext"></a><p class="decl"><code><span class="ident">lcgNext</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span></code></p>
-
-<a name="lcgStep"></a><p class="decl"><code><span class="ident">lcgStep</span> <span class="syntax">::</span> <a href="#Gen"><span class="ctor">Gen</span></a> <span class="ctor">Number</span></code></p>
-
 <a name="uniform"></a><p class="decl"><code><span class="ident">uniform</span> <span class="syntax">::</span> <a href="#Gen"><span class="ctor">Gen</span></a> <span class="ctor">Number</span></code></p>
 
-<a name="float32ToInt32"></a><p class="decl"><code><span class="ident">float32ToInt32</span> <span class="syntax">::</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="ctor">Number</span></code></p>
 <a name="perturbGen"></a><p class="decl"><code><span class="ident">perturbGen</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ctor">Number</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="#Gen"><span class="ctor">Gen</span></a> <span class="ident">a</span></code></p>
 
 <a name="functorGen"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorGen</span> <span class="syntax">::</span> <a href="../../../Prelude/index.html#Functor"><span class="ctor">Functor</span></a> <a href="#Gen"><span class="ctor">Gen</span></a></code></p>

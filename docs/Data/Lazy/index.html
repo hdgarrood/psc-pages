@@ -1,8 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Lazy</title></head><body><div id="header"><h1>Data.Lazy</h1></div>
-
-
-<a name="Lazy"></a><p class="decl"><code><span class="keyword">data</span> <a href="#Lazy"><span class="ctor">Lazy</span></a> <span class="syntax">::</span> * -&gt; *</code></p>
+<html><head><link rel="stylesheet" type="text/css" href="../../style.css"><title>Data.Lazy</title></head><body><div id="header"><h1>Data.Lazy</h1></div><a name="Lazy"></a><p class="decl"><code><span class="keyword">data</span> <a href="#Lazy"><span class="ctor">Lazy</span></a> <span class="syntax">::</span> * -&gt; *</code></p>
 <a name="defer"></a><p class="decl"><code><span class="ident">defer</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="../../Prelude/index.html#Unit"><span class="ctor">Unit</span></a> <span class="syntax">-&gt;</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="#Lazy"><span class="ctor">Lazy</span></a> <span class="ident">a</span></code></p>
 <a name="force"></a><p class="decl"><code><span class="ident">force</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Lazy"><span class="ctor">Lazy</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>
 <a name="functorLazy"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">functorLazy</span> <span class="syntax">::</span> <a href="../../Prelude/index.html#Functor"><span class="ctor">Functor</span></a> <a href="#Lazy"><span class="ctor">Lazy</span></a></code></p>

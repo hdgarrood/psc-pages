@@ -1,9 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Control.Monad.Trampoline</title></head><body><div id="header"><h1>Control.Monad.Trampoline</h1></div>
-
-
-
-<a name="Trampoline"></a><p class="decl"><code><span class="keyword">type</span> <a href="#Trampoline"><span class="ctor">Trampoline</span></a> <span class="syntax">=</span> <a href="../Free/index.html#Free"><span class="ctor">Free</span></a> <a href="../../../Data/Lazy/index.html#Lazy"><span class="ctor">Lazy</span></a></code></p>
+<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Control.Monad.Trampoline</title></head><body><div id="header"><h1>Control.Monad.Trampoline</h1></div><a name="Trampoline"></a><p class="decl"><code><span class="keyword">type</span> <a href="#Trampoline"><span class="ctor">Trampoline</span></a> <span class="syntax">=</span> <a href="../Free/index.html#Free"><span class="ctor">Free</span></a> <a href="../../../Data/Lazy/index.html#Lazy"><span class="ctor">Lazy</span></a></code></p>
 <a name="done"></a><p class="decl"><code><span class="ident">done</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ident">a</span> <span class="syntax">-&gt;</span> <a href="#Trampoline"><span class="ctor">Trampoline</span></a> <span class="ident">a</span></code></p>
 
 <a name="suspend"></a><p class="decl"><code><span class="ident">suspend</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Trampoline"><span class="ctor">Trampoline</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="#Trampoline"><span class="ctor">Trampoline</span></a> <span class="ident">a</span></code></p>
