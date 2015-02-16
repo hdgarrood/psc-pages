@@ -7,21 +7,19 @@ import Control.Monad
 import Control.Monad.Writer
 import Control.Arrow (first)
 import Data.Ord (comparing)
-import Data.Function (on)
-import Data.Char (toUpper, toLower)
+import Data.Char (toUpper)
 import Data.Default (def)
-import Data.List (nub, sortBy, replicate, intercalate)
+import Data.List (nub, sortBy, intercalate)
 import Data.List.Split (splitOn)
 import Data.String (fromString)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Version (showVersion)
-import Data.Foldable (traverse_, for_)
+import Data.Foldable (for_)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 
-import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TL
 
 import Options.Applicative
@@ -42,9 +40,6 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
 import Data.FileEmbed
-
-import Control.Monad ((>=>))
-import Control.Monad.Trans (lift)
 
 import qualified Cheapskate
 
@@ -195,8 +190,8 @@ contentsPageHtml ms = do
 indexPageHtml :: H.Html
 indexPageHtml = do
   template "index/index.html" "Index" $ do
-    H.ul $ for_ ['A'..'Z'] $ \c -> 
-      H.li $ H.a ! A.href (fromString (c : ".html")) $ text [c]
+    H.ul $ for_ ['a'..'z'] $ \c -> 
+      H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
       
 letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
 letterPageHtml c bs = do

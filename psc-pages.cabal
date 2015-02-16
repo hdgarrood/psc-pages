@@ -29,4 +29,5 @@ executable psc-pages
                        file-embed,
                        split
   hs-source-dirs:      src
+  ghc-options:         -Wall
   default-language:    Haskell2010
