@@ -1,8 +1,12 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.All</title></head><body><div id="header"><h1>Data.Monoid.All</h1></div><a name="All"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#All"><span class="ctor">All</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#All"><span class="ctor">All</span></a> <span class="ctor">Boolean</span></code></li></ul>
+<html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.All</title></head><body><div id="header"><h1>Data.Monoid.All</h1></div><a name="All"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#All"><span class="ctor">All</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#All"><span class="ctor">All</span></a> <span class="ctor">Boolean</span></code></li></ul><p>Boolean monoid and semigroup under conjunction.</p>
+<pre class="haskell"><code>All x &lt;&gt; All y == All (x &amp;&amp; y)
+mempty :: All == All true
+</code></pre>
 <a name="runAll"></a><p class="decl"><code><span class="ident">runAll</span> <span class="syntax">::</span> <a href="#All"><span class="ctor">All</span></a> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>
 
 <a name="eqAll"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">eqAll</span> <span class="syntax">::</span> <a href="../../../Prelude/index.html#Eq"><span class="ctor">Eq</span></a> <a href="#All"><span class="ctor">All</span></a></code></p>
+<a name="ordAll"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">ordAll</span> <span class="syntax">::</span> <a href="../../../Prelude/index.html#Ord"><span class="ctor">Ord</span></a> <a href="#All"><span class="ctor">All</span></a></code></p>
 <a name="showAll"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">showAll</span> <span class="syntax">::</span> <a href="../../../Prelude/index.html#Show"><span class="ctor">Show</span></a> <a href="#All"><span class="ctor">All</span></a></code></p>
 <a name="semigroupAll"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">semigroupAll</span> <span class="syntax">::</span> <a href="../../../Prelude/index.html#Semigroup"><span class="ctor">Semigroup</span></a> <a href="#All"><span class="ctor">All</span></a></code></p>
 <a name="monoidAll"></a><p class="decl"><code><span class="keyword">instance</span> <span class="ident">monoidAll</span> <span class="syntax">::</span> <a href="../index.html#Monoid"><span class="ctor">Monoid</span></a> <a href="#All"><span class="ctor">All</span></a></code></p>

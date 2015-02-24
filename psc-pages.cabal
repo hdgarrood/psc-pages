@@ -16,7 +16,7 @@ executable psc-pages
   other-extensions:    
   build-depends:       base >=4.7 && <4.8, 
                        cheapskate -any, 
-                       purescript >= 0.6.7 && < 0.7,
+                       purescript >= 0.6.8 && < 0.7,
                        blaze-markup,
                        blaze-html,
                        transformers,
