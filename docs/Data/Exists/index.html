@@ -7,22 +7,22 @@ representation of the existential by simply hiding type information.</p>
 <p>For example, consider the type <code>exists s. Tuple s (s -&gt; Tuple s a)</code> which represents infinite streams
 of elements of type <code>a</code>.</p>
 <p>This type can be constructed by creating a type constructor <code>StreamF</code> as follows:</p>
-<pre class="haskell"><code>data StreamF a s = StreamF s (s -&gt; Tuple s a) 
+<pre class="purescript"><code>data StreamF a s = StreamF s (s -&gt; Tuple s a) 
 </code></pre>
 <p>We can then define the type of streams using <code>Exists</code>:</p>
-<pre class="haskell"><code>type Stream a = Exists (StreamF a)
+<pre class="purescript"><code>type Stream a = Exists (StreamF a)
 </code></pre>
 <a name="mkExists"></a><p class="decl"><code><span class="ident">mkExists</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">f</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ident">f</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <a href="#Exists"><span class="ctor">Exists</span></a> <span class="ident">f</span></code></p><p>The <code>mkExists</code> function is used to introduce a value of type <code>Exists f</code>, by providing a value of
 type <code>f a</code>, for some type <code>a</code> which will be hidden in the existentially-quantified type.</p>
 <p>For example, to create a value of type <code>Stream Number</code>, we might use <code>mkExists</code> as follows:</p>
-<pre class="haskell"><code>nats :: Stream Number
+<pre class="purescript"><code>nats :: Stream Number
 nats = mkExists $ StreamF 0 (\n -&gt; Tuple (n + 1) n)
 </code></pre>
 <a name="runExists"></a><p class="decl"><code><span class="ident">runExists</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">f</span> <span class="ident">r</span><span class="syntax">.</span> <span class="syntax">(</span><span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><span class="ident">f</span> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">r</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="syntax">(</span><a href="#Exists"><span class="ctor">Exists</span></a> <span class="ident">f</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">r</span></code></p><p>The <code>runExists</code> function is used to eliminate a value of type <code>Exists f</code>. The rank 2 type ensures
 that the existentially-quantified type does not escape its scope. Since the function is required
 to work for <em>any</em> type <code>a</code>, it will work for the existentially-quantified type.</p>
 <p>For example, we can write a function to obtain the head of a stream by using <code>runExists</code> as follows:</p>
-<pre class="haskell"><code>head :: forall a. Stream a -&gt; a
+<pre class="purescript"><code>head :: forall a. Stream a -&gt; a
 head = runExists head'
   where
   head' :: forall s. StreamF a s -&gt; a

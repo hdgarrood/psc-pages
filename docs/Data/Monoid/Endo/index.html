@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.Endo</title></head><body><div id="header"><h1>Data.Monoid.Endo</h1></div><a name="Endo"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Endo"><span class="ctor">Endo</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Endo"><span class="ctor">Endo</span></a> <span class="syntax">(</span><span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ident">a</span><span class="syntax">)</span></code></li></ul><p>Monoid of endomorphisms under composition.</p>
 <p>Composes of functions of type <code>a -&gt; a</code>:</p>
-<pre class="haskell"><code>Endo f &lt;&gt; Endo g == Endo (f &lt;&lt;&lt; g)
+<pre class="purescript"><code>Endo f &lt;&gt; Endo g == Endo (f &lt;&lt;&lt; g)
 mempty :: Endo _ == Endo id
 </code></pre>
 <a name="runEndo"></a><p class="decl"><code><span class="ident">runEndo</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Endo"><span class="ctor">Endo</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>

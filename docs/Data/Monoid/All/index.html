@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.All</title></head><body><div id="header"><h1>Data.Monoid.All</h1></div><a name="All"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#All"><span class="ctor">All</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#All"><span class="ctor">All</span></a> <span class="ctor">Boolean</span></code></li></ul><p>Boolean monoid and semigroup under conjunction.</p>
-<pre class="haskell"><code>All x &lt;&gt; All y == All (x &amp;&amp; y)
+<pre class="purescript"><code>All x &lt;&gt; All y == All (x &amp;&amp; y)
 mempty :: All == All true
 </code></pre>
 <a name="runAll"></a><p class="decl"><code><span class="ident">runAll</span> <span class="syntax">::</span> <a href="#All"><span class="ctor">All</span></a> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>

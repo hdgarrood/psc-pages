@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.Additive</title></head><body><div id="header"><h1>Data.Monoid.Additive</h1></div><a name="Additive"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Additive"><span class="ctor">Additive</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Additive"><span class="ctor">Additive</span></a> <span class="ident">a</span></code></li></ul><p>Monoid and semigroup for semirings under addition.</p>
-<pre class="haskell"><code>Additive x &lt;&gt; Additive y == Additive (x + y)
+<pre class="purescript"><code>Additive x &lt;&gt; Additive y == Additive (x + y)
 mempty :: Additive _ == Additive zero
 </code></pre>
 <a name="runAdditive"></a><p class="decl"><code><span class="ident">runAdditive</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Additive"><span class="ctor">Additive</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>

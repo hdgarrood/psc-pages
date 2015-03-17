@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.Last</title></head><body><div id="header"><h1>Data.Monoid.Last</h1></div><a name="Last"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Last"><span class="ctor">Last</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Last"><span class="ctor">Last</span></a> <span class="syntax">(</span><a href="../../Maybe/index.html#Maybe"><span class="ctor">Maybe</span></a> <span class="ident">a</span><span class="syntax">)</span></code></li></ul><p>Monoid returning the last (right-most) non-Nothing value.</p>
-<pre class="haskell"><code>Last (Just x) &lt;&gt; Last (Just y) == Last (Just y)
+<pre class="purescript"><code>Last (Just x) &lt;&gt; Last (Just y) == Last (Just y)
 Last (Just x) &lt;&gt; Nothing == Last (Just x)
 Last Nothing &lt;&gt; Nothing == Last Nothing
 mempty :: Last _ == Last Nothing

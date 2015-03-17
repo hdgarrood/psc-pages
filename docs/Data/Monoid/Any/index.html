@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.Any</title></head><body><div id="header"><h1>Data.Monoid.Any</h1></div><a name="Any"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Any"><span class="ctor">Any</span></a></code></p><h3>Constructors</h3><ul><li><code><a href="#Any"><span class="ctor">Any</span></a> <span class="ctor">Boolean</span></code></li></ul><p>Boolean monoid and semigroup under disjunction.</p>
-<pre class="haskell"><code>Any x &lt;&gt; Any y == Any (x || y)
+<pre class="purescript"><code>Any x &lt;&gt; Any y == Any (x || y)
 mempty :: Any == Any false
 </code></pre>
 <a name="runAny"></a><p class="decl"><code><span class="ident">runAny</span> <span class="syntax">::</span> <a href="#Any"><span class="ctor">Any</span></a> <span class="syntax">-&gt;</span> <span class="ctor">Boolean</span></code></p>

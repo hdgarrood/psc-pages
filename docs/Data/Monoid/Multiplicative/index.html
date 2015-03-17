@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><link rel="stylesheet" type="text/css" href="../../../style.css"><title>Data.Monoid.Multiplicative</title></head><body><div id="header"><h1>Data.Monoid.Multiplicative</h1></div><a name="Multiplicative"></a><p class="decl"><code><span class="keyword">newtype</span> <a href="#Multiplicative"><span class="ctor">Multiplicative</span></a> <span class="ident">a</span></code></p><h3>Constructors</h3><ul><li><code><a href="#Multiplicative"><span class="ctor">Multiplicative</span></a> <span class="ident">a</span></code></li></ul><p>Monoid and semigroup for semirings under multiplication.</p>
-<pre class="haskell"><code>Multiplicative x &lt;&gt; Multiplicative y == Multiplicative (x * y)
+<pre class="purescript"><code>Multiplicative x &lt;&gt; Multiplicative y == Multiplicative (x * y)
 mempty :: Multiplicative _ == Multiplicative one
 </code></pre>
 <a name="runMultiplicative"></a><p class="decl"><code><span class="ident">runMultiplicative</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#Multiplicative"><span class="ctor">Multiplicative</span></a> <span class="ident">a</span><span class="syntax">)</span> <span class="syntax">-&gt;</span> <span class="ident">a</span></code></p>
