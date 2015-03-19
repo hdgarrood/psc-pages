@@ -38,7 +38,8 @@
     "purescript-coproducts": "*",
     "purescript-math": "*",
     "purescript-exceptions": "*",
-    "purescript-foreign": "*"
+    "purescript-foreign": "*",
+    "purescript-tuples": "*"
   },
   "resolutions": {
     "purescript-monoid": "~0.2.0",
