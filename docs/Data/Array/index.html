@@ -8,9 +8,10 @@ this function without bounds checking.</p>
 <a name="singleton"></a><p class="decl"><code><span class="ident">singleton</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="ident">a</span> <span class="syntax">-&gt;</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p><p>Create an array of one element</p>
 
 <a name="head"></a><p class="decl"><code><span class="ident">head</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <a href="../Maybe/index.html#Maybe"><span class="ctor">Maybe</span></a> <span class="ident">a</span></code></p><p>Get the first element in an array, or <code>Nothing</code> if the array is empty</p>
+<p>Running time: <code>O(1)</code>.</p>
 
 <a name="last"></a><p class="decl"><code><span class="ident">last</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <a href="../Maybe/index.html#Maybe"><span class="ctor">Maybe</span></a> <span class="ident">a</span></code></p><p>Get the last element in an array, or <code>Nothing</code> if the array is empty</p>
-<p>Running time: <code>O(n)</code> where <code>n</code> is the length of the array</p>
+<p>Running time: <code>O(1)</code>.</p>
 
 <a name="tail"></a><p class="decl"><code><span class="ident">tail</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">a</span><span class="syntax">.</span> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span> <span class="syntax">-&gt;</span> <a href="../Maybe/index.html#Maybe"><span class="ctor">Maybe</span></a> <span class="syntax">[</span><span class="ident">a</span><span class="syntax">]</span></code></p><p>Get all but the first element of an array, creating a new array, or <code>Nothing</code> if the array is empty</p>
 <p>Running time: <code>O(n)</code> where <code>n</code> is the length of the array</p>
