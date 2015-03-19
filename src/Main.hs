@@ -68,6 +68,10 @@ app (input, outputDir) = do
               mkdirp stylesheetFile
               T.writeFile stylesheetFile stylesheet
               
+              let bootstrapFile = outputDir </> "bootstrap.min.css"
+              mkdirp bootstrapFile
+              T.writeFile bootstrapFile bootstrap
+              
               let contentsFile = outputDir </> "index.html"
               TL.writeFile contentsFile (H.renderHtml $ contentsPageHtml modules)
               
@@ -82,6 +86,12 @@ app (input, outputDir) = do
               for_ modules (renderModule outputDir bookmarks)
               exitSuccess
   where
+  stylesheet :: T.Text
+  stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
+ 
+  bootstrap :: T.Text
+  bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
+
   parseFile :: FilePath -> IO (FilePath, String)
   parseFile input = (,) input <$> readFile input
   
@@ -135,9 +145,6 @@ relativeTo to from = go (splitOn "/" to) (splitOn "/" from)
   go (x : xs) (y : ys) | x == y = go xs ys
   go xs ys = intercalate "/" $ replicate (length ys - 1) ".." ++ xs
 
-stylesheet :: T.Text
-stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
-
 filePathFor :: P.ModuleName -> FilePath
 filePathFor (P.ModuleName parts) = go parts
   where
@@ -166,8 +173,8 @@ template curFile title body = do
   H.docType
   H.html $ do
     H.head $ do
+      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString ("bootstrap.min.css" `relativeTo` curFile))
       H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString ("style.css" `relativeTo` curFile))
-      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
       H.title $ H.toHtml title
     H.body $ do
       H.div ! A.class_ "navbar navbar-default" $ do

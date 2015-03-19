@@ -2,6 +2,7 @@
     color: #a0a0a0;
 }
 
-.typeclass {
-    margin: 10px 20px;
+code {
+    color: #194a5b;
+    background-color: #f2f5f9;
 }
