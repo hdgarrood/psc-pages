@@ -115,8 +115,7 @@ getDeclarationTitle (P.ExternDeclaration _ name _ _)                = Just (show
 getDeclarationTitle (P.DataDeclaration _ name _ _)                  = Just (show name)
 getDeclarationTitle (P.ExternDataDeclaration name _)                = Just (show name)
 getDeclarationTitle (P.TypeSynonymDeclaration name _ _)             = Just (show name)
-getDeclarationTitle (P.TypeClassDeclaration name _ _ _)   = Just (show name)
-getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _)        = Just (show name)
+getDeclarationTitle (P.TypeClassDeclaration name _ _ _)             = Just (show name)
 getDeclarationTitle (P.PositionedDeclaration _ _ d)                 = getDeclarationTitle d
 getDeclarationTitle _                                               = Nothing
     
