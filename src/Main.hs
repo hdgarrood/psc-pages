@@ -59,7 +59,7 @@ app (input, outputDir) = do
         Right (ms', _) ->
           case desugar ms' of
             Left err -> do
-              hPutStrLn stderr $ P.prettyPrintErrorStack False err
+              hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
             Right modules -> do
               let bookmarks = concatMap collectBookmarks modules    
@@ -96,9 +96,9 @@ app (input, outputDir) = do
   parseFile input = (,) input <$> readFile input
   
   addDefaultImport :: P.ModuleName -> P.Module -> P.Module
-  addDefaultImport toImport m@(P.Module mn decls exps)  =
+  addDefaultImport toImport m@(P.Module coms mn decls exps)  =
     if isExistingImport `any` decls || mn == toImport then m
-    else P.Module mn (P.ImportDeclaration toImport P.Unqualified Nothing : decls) exps
+    else P.Module coms mn (P.ImportDeclaration toImport P.Implicit Nothing : decls) exps
     where
     isExistingImport (P.ImportDeclaration mn' _ _) | mn' == toImport = True
     isExistingImport (P.PositionedDeclaration _ _ d) = isExistingImport d
@@ -110,14 +110,14 @@ app (input, outputDir) = do
   importPrelude :: P.Module -> P.Module
   importPrelude = addDefaultImport (P.ModuleName [P.ProperName C.prelude])
   
-  desugar :: [P.Module] -> Either P.ErrorStack [P.Module]
+  desugar :: [P.Module] -> Either P.MultipleErrors [P.Module]
   desugar = P.evalSupplyT 0 . desugar'
     where
-    desugar' :: [P.Module] -> P.SupplyT (Either P.ErrorStack) [P.Module]
-    desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> lift . P.desugarImports
+    desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
+    desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
 
 collectBookmarks :: P.Module -> [(P.ModuleName, String)]
-collectBookmarks (P.Module moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds  
+collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds  
 
 getDeclarationTitle :: P.Declaration -> Maybe String
 getDeclarationTitle (P.TypeDeclaration name _)                      = Just (show name)
@@ -130,7 +130,7 @@ getDeclarationTitle (P.PositionedDeclaration _ _ d)                 = getDeclara
 getDeclarationTitle _                                               = Nothing
     
 renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
-renderModule outputDir bookmarks m@(P.Module moduleName _ exps) = do
+renderModule outputDir bookmarks m@(P.Module _ moduleName _ exps) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml bookmarks m
   mkdirp filename
@@ -193,7 +193,7 @@ contentsPageHtml :: [P.Module] -> H.Html
 contentsPageHtml ms = do
   template "index.html" "Contents" $ do
     H.h2 $ text "Modules"
-    H.ul $ for_ (sortBy (comparing $ \(P.Module moduleName _ _) -> moduleName) ms) $ \(P.Module moduleName _ _) -> H.li $
+    H.ul $ for_ (sortBy (comparing $ \(P.Module _ moduleName _ _) -> moduleName) ms) $ \(P.Module _ moduleName _ _) -> H.li $
       H.a ! A.href (fromString (filePathFor moduleName `relativeTo` "index.html")) $ text (show moduleName)
 
 indexPageHtml :: H.Html
@@ -214,8 +214,10 @@ letterPageHtml c bs = do
   matches _ = False
   
 moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
-moduleToHtml bookmarks (P.Module moduleName ds exps) = 
-  template (filePathFor moduleName) (show moduleName) $ for_ (filter (P.isExported exps) ds) (declToHtml exps)
+moduleToHtml bookmarks (P.Module coms moduleName ds exps) = 
+  template (filePathFor moduleName) (show moduleName) $ do
+    renderComments coms
+    for_ (filter (P.isExported exps) ds) (declToHtml exps)
   where
   declToHtml :: Maybe [P.DeclarationRef] -> P.Declaration -> H.Html
   declToHtml exps decl = do
