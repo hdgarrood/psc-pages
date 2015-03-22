@@ -41,7 +41,8 @@
     "purescript-foreign": "*",
     "purescript-tuples": "*",
     "purescript-tailrec": "*",
-    "purescript-monad-eff": "*"
+    "purescript-monad-eff": "*",
+    "purescript-parallel": "*"
   },
   "resolutions": {
     "purescript-monoid": "~0.2.0",
