@@ -39,7 +39,9 @@
     "purescript-math": "*",
     "purescript-exceptions": "*",
     "purescript-foreign": "*",
-    "purescript-tuples": "*"
+    "purescript-tuples": "*",
+    "purescript-tailrec": "*",
+    "purescript-monad-eff": "*"
   },
   "resolutions": {
     "purescript-monoid": "~0.2.0",
