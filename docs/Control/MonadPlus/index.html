@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html><head><link rel="stylesheet" type="text/css" href="../../bootstrap.min.css"><link rel="stylesheet" type="text/css" href="../../style.css"><title>Control.MonadPlus</title></head><body><div class="navbar navbar-default"><div class="container"><div class="navbar-header"><a class="navbar-brand">Core Libraries</a></div><ul class="nav navbar-nav"><li><a href="../../index.html">Contents</a></li><li><a href="../../index/index.html">Index</a></li></ul></div></div><div class="container" id="content"><h1>Control.MonadPlus</h1>
+<html><head><link rel="stylesheet" type="text/css" href="../../bootstrap.min.css"><link rel="stylesheet" type="text/css" href="../../style.css"><title>Control.MonadPlus</title></head><body><div class="navbar navbar-default"><div class="container"><div class="navbar-header"><a class="navbar-brand">Core Libraries</a></div><ul class="nav navbar-nav"><li><a href="../../index.html">Contents</a></li><li><a href="../../index/index.html">Index</a></li></ul></div></div><div class="container" id="content"><h1>Control.MonadPlus</h1><p>This module defines the <code>MonadPlus</code> type class.</p>
 <a name="MonadPlus" href="#MonadPlus"><h2><code>MonadPlus</code></h2></a><p class="decl"><code><span class="keyword">class</span> <span class="syntax">(</span><a href="../../Prelude/index.html#Monad"><span class="ctor">Monad</span></a> <span class="ident">m</span><span class="syntax">,</span> <a href="../Alternative/index.html#Alternative"><span class="ctor">Alternative</span></a> <span class="ident">m</span><span class="syntax">) &lt;= </span><a href="#MonadPlus"><span class="ctor">MonadPlus</span></a> <span class="ident">m</span></code></p><ul></ul><p>The <code>MonadPlus</code> type class has no members of its own; it just specifies
 that the type has both <code>Monad</code> and <code>Alternative</code> instances.</p>
 <p>Types which have <code>MonadPlus</code> instances should also satisfy the following
@@ -8,6 +8,17 @@ laws:</p>
 <li>Distributivity: <code>(x &lt;|&gt; y) &gt;&gt;= f == (x &gt;&gt;= f) &lt;|&gt; (y &gt;&gt;= f)</code></li>
 <li>Annihilation: <code>empty &gt;&gt;= f = empty</code></li>
 </ul>
-<a name="guard" href="#guard"><h2><code>guard</code></h2></a><p class="decl"><code><span class="ident">guard</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">m</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#MonadPlus"><span class="ctor">MonadPlus</span></a> <span class="ident">m</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ctor">Boolean</span> <span class="syntax">-&gt;</span> <span class="ident">m</span> <a href="../../Prelude/index.html#Unit"><span class="ctor">Unit</span></a></code></p>
+<a name="guard" href="#guard"><h2><code>guard</code></h2></a><p class="decl"><code><span class="ident">guard</span> <span class="syntax">::</span> <span class="keyword">forall</span> <span class="ident">m</span><span class="syntax">.</span> <span class="syntax">(</span><a href="#MonadPlus"><span class="ctor">MonadPlus</span></a> <span class="ident">m</span><span class="syntax">)</span> <span class="syntax">=&gt;</span> <span class="ctor">Boolean</span> <span class="syntax">-&gt;</span> <span class="ident">m</span> <a href="../../Prelude/index.html#Unit"><span class="ctor">Unit</span></a></code></p><p>Fail using <code>Plus</code> if a condition does not hold, or
+succeed using <code>Monad</code> if it does.</p>
+<p>For example:</p>
+<pre class="purescript"><code>import Data.Array
+
+factors :: Number -&gt; [Number]
+factors n = do
+  a &lt;- 1 .. n
+  b &lt;- 1 .. a
+  guard $ a * b == n
+  return a
+</code></pre>
 
 </div></body></html>
