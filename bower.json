@@ -42,6 +42,7 @@
     "purescript-tuples": "*",
     "purescript-tailrec": "*",
     "purescript-monad-eff": "*",
+    "purescript-semirings": "*",
     "purescript-parallel": "*"
   },
   "resolutions": {
