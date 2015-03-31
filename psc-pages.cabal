@@ -19,16 +19,10 @@ library
   build-depends:       base >=4.7 && <4.8,
                        cheapskate -any,
                        purescript >= 0.6.9.3 && < 0.7,
-                       blaze-markup,
                        blaze-html,
-                       transformers,
-                       mtl,
-                       optparse-applicative,
                        text,
                        data-default,
                        filepath,
-                       directory,
-                       file-embed,
                        split
   exposed-modules:     PscPages
 
@@ -39,17 +33,14 @@ executable psc-pages
   build-depends:       base >=4.7 && <4.8,
                        purescript >= 0.6.9.3 && < 0.7,
                        psc-pages -any,
-                       blaze-markup,
                        blaze-html,
                        transformers,
                        mtl,
                        optparse-applicative,
                        text,
-                       data-default,
                        filepath,
                        directory,
                        file-embed,
-                       split
   hs-source-dirs:      psc-pages
   ghc-options:         -Wall
   default-language:    Haskell2010
