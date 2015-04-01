@@ -60,39 +60,39 @@ app (input, outputDir) = do
               hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
             Right modules -> do
-              let bookmarks = concatMap collectBookmarks modules    
-                
+              let bookmarks = concatMap collectBookmarks modules
+
               let stylesheetFile = outputDir </> "style.css"
               mkdirp stylesheetFile
               T.writeFile stylesheetFile stylesheet
-              
+
               let bootstrapFile = outputDir </> "bootstrap.min.css"
               mkdirp bootstrapFile
               T.writeFile bootstrapFile bootstrap
-              
+
               let contentsFile = outputDir </> "index.html"
               TL.writeFile contentsFile (H.renderHtml $ contentsPageHtml modules)
-              
+
               let indexFile = outputDir </> "index/index.html"
               mkdirp indexFile
               TL.writeFile indexFile (H.renderHtml indexPageHtml)
-              
+
               for_ ['a'..'z'] $ \c -> do
                 let letterFile = outputDir </> ("index/" ++ c : ".html")
                 TL.writeFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
-              
+
               for_ modules (renderModule outputDir bookmarks)
               exitSuccess
   where
   stylesheet :: T.Text
   stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
- 
+
   bootstrap :: T.Text
   bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
 
   parseFile :: FilePath -> IO (FilePath, String)
   parseFile input = (,) input <$> readFile input
-  
+
   addDefaultImport :: P.ModuleName -> P.Module -> P.Module
   addDefaultImport toImport m@(P.Module coms mn decls exps)  =
     if isExistingImport `any` decls || mn == toImport then m
@@ -107,7 +107,7 @@ app (input, outputDir) = do
 
   importPrelude :: P.Module -> P.Module
   importPrelude = addDefaultImport (P.ModuleName [P.ProperName C.prelude])
-  
+
   desugar :: [P.Module] -> Either P.MultipleErrors [P.Module]
   desugar = P.evalSupplyT 0 . desugar'
     where
@@ -116,7 +116,7 @@ app (input, outputDir) = do
 
 collectBookmarks :: P.Module -> [(P.ModuleName, String)]
 collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
-    
+
 renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
 renderModule outputDir bookmarks m@(P.Module _ moduleName _ exps) = do
   let filename = outputDir </> filePathFor moduleName
@@ -137,12 +137,12 @@ contentsPageHtml ms = do
 indexPageHtml :: H.Html
 indexPageHtml = do
   template "index/index.html" "Index" $ do
-    H.ul $ for_ ['a'..'z'] $ \c -> 
+    H.ul $ for_ ['a'..'z'] $ \c ->
       H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
 
 sp :: H.Html
 sp = text " "
-      
+
 letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
 letterPageHtml c bs = do
   let filename = "index/" ++ c : ".html"
@@ -151,15 +151,15 @@ letterPageHtml c bs = do
       H.a ! A.href (fromString ((filePathFor mn `relativeTo` filename) ++ "#" ++ s)) $ text s
       sp *> text ("(" ++ show mn ++ ")")
   where
-  matches (_, (c':_)) = toUpper c == toUpper c' 
+  matches (_, (c':_)) = toUpper c == toUpper c'
   matches _ = False
-  
+
 
 inputFiles :: Parser [FilePath]
 inputFiles = many . strArgument $
      metavar "FILE"
   <> help "The input .purs file(s)"
-  
+
 outputDirectory :: Parser FilePath
 outputDirectory = strOption $
      short 'o'
