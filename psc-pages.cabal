@@ -24,8 +24,10 @@ library
                        data-default,
                        filepath,
                        split
-  exposed-modules:     PscPages
-                     , PscPages.RenderedCode
+  exposed-modules:     PscPages.RenderedCode
+                     , PscPages.HtmlHelpers
+                     , PscPages.Render
+                     , PscPages.AsHtml
 
 executable psc-pages
   main-is:             Main.hs

@@ -10,7 +10,7 @@ import Data.Ord (comparing)
 import Data.Char (toUpper)
 import Data.List (nub, sortBy)
 import Data.String (fromString)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Version (showVersion)
 import Data.Foldable (for_)
 
@@ -39,7 +39,9 @@ import qualified Text.Blaze.Html5.Attributes as A
 
 import Data.FileEmbed
 
-import PscPages
+import PscPages.Render
+import PscPages.HtmlHelpers
+import PscPages.AsHtml
 
 app :: ([FilePath], FilePath) -> IO ()
 app (input, outputDir) = do
@@ -51,8 +53,8 @@ app (input, outputDir) = do
       exitFailure
     Right ms ->
       case P.sortModules . map (importPrim . importPrelude . snd) $ ms of
-        Left e -> do
-          hPutStrLn stderr e
+        Left e' -> do
+          hPutStrLn stderr e'
           exitFailure
         Right (ms', _) ->
           case desugar ms' of
@@ -91,7 +93,7 @@ app (input, outputDir) = do
   bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
 
   parseFile :: FilePath -> IO (FilePath, String)
-  parseFile input = (,) input <$> readFile input
+  parseFile input' = (,) input' <$> readFile input'
 
   addDefaultImport :: P.ModuleName -> P.Module -> P.Module
   addDefaultImport toImport m@(P.Module coms mn decls exps)  =
@@ -114,11 +116,8 @@ app (input, outputDir) = do
     desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
     desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
 
-collectBookmarks :: P.Module -> [(P.ModuleName, String)]
-collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
-
 renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
-renderModule outputDir bookmarks m@(P.Module _ moduleName _ exps) = do
+renderModule outputDir bookmarks m@(P.Module _ moduleName _ _) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml bookmarks m
   mkdirp filename
@@ -139,9 +138,6 @@ indexPageHtml = do
   template "index/index.html" "Index" $ do
     H.ul $ for_ ['a'..'z'] $ \c ->
       H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
-
-sp :: H.Html
-sp = text " "
 
 letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
 letterPageHtml c bs = do

@@ -2,29 +2,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module PscPages where
+module PscPages.Render where
 
-import Control.Applicative
+-- | Functions and data types for rendering generated documentation for
+-- | PureScript code. 
+
 import Control.Monad
 import Data.Monoid ((<>), mempty, Monoid)
 import Data.Default (def)
-import Data.List (intercalate)
-import Data.List.Split (splitOn)
 import Data.String (fromString)
-import Data.Maybe (fromMaybe, mapMaybe)
-import Data.Foldable (for_)
+import Data.Maybe (mapMaybe)
 
-import Data.Text (Text)
-import qualified Data.Text as T
+import qualified Text.Blaze.Html as H
 
 import qualified Language.PureScript as P
-
-import System.FilePath ((</>))
-
-import Text.Blaze.Html ((!))
-import qualified Text.Blaze.Html as H
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as A
 
 import PscPages.RenderedCode
 
@@ -40,75 +31,13 @@ getDeclarationTitle (P.TypeClassDeclaration name _ _ _) = Just (show name)
 getDeclarationTitle (P.PositionedDeclaration _ _ d)     = getDeclarationTitle d
 getDeclarationTitle _                                   = Nothing
 
-para :: H.AttributeValue -> H.Html -> H.Html
-para className content = H.p ! A.class_ className $ content
-
-withClass :: H.AttributeValue -> H.Html -> H.Html
-withClass className content = H.span ! A.class_ className $ content
-
-text :: String -> H.Html
-text = H.toHtml
-
-intercalateA_ :: (Applicative m) => m b -> [m a] -> m ()
-intercalateA_ _   []     = pure ()
-intercalateA_ _   [x]    = void x
-intercalateA_ sep (x:xs) = (x <* sep) *> intercalateA_ sep xs
+collectBookmarks :: P.Module -> [(P.ModuleName, String)]
+collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
 
 mintersperse :: (Monoid m) => m -> [m] -> m
 mintersperse _ []       = mempty
 mintersperse _ [x]      = x
 mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
-
-template :: FilePath -> String -> H.Html -> H.Html
-template curFile title body = do
-  H.docType
-  H.html $ do
-    H.head $ do
-      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString ("bootstrap.min.css" `relativeTo` curFile))
-      H.link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href (fromString ("style.css" `relativeTo` curFile))
-      H.title $ H.toHtml title
-    H.body $ do
-      H.div ! A.class_ "navbar navbar-default" $ do
-        H.div ! A.class_ "container" $ do
-          H.div ! A.class_ "navbar-header" $ do
-            H.a ! A.class_ "navbar-brand" $ text "Core Libraries"
-          H.ul ! A.class_ "nav navbar-nav" $ do
-            H.li $ H.a ! A.href (fromString ("index.html" `relativeTo` curFile)) $ text "Contents"
-            H.li $ H.a ! A.href (fromString ("index/index.html" `relativeTo` curFile)) $ text "Index"
-
-      H.div ! A.class_ "container" ! A.id "content" $ do
-        H.h1 $ text title
-        body
-
-relativeTo :: FilePath -> FilePath -> FilePath
-relativeTo to from = go (splitOn "/" to) (splitOn "/" from)
-  where
-  go (x : xs) (y : ys) | x == y = go xs ys
-  go xs ys = intercalate "/" $ replicate (length ys - 1) ".." ++ xs
-
-filePathFor :: P.ModuleName -> FilePath
-filePathFor (P.ModuleName parts) = go parts
-  where
-  go [] = "index.html"
-  go (x : xs) = show x </> go xs
-
-moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
-moduleToHtml bookmarks (P.Module coms moduleName ds exps) =
-  template (filePathFor moduleName) (show moduleName) $ do
-    renderComments coms
-    for_ (filter (P.isExported exps) ds) (declToHtml exps)
-  where
-  linksContext :: LinksContext
-  linksContext = (bookmarks, moduleName)
-
-  declToHtml :: Maybe [P.DeclarationRef] -> P.Declaration -> H.Html
-  declToHtml exps decl = do
-    for_ (getDeclarationTitle decl) $ \s ->
-      H.a ! A.name (fromString s) ! A.href (fromString ('#' : s)) $
-        H.h2 $ H.code $ text s
-    case renderDeclaration exps decl of
-      Just rd -> declarationAsHtml linksContext rd
-      Nothing -> return ()
 
 data RenderedDeclaration = RenderedDeclaration
   { rdComments :: Maybe H.Html
@@ -124,14 +53,6 @@ type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
 
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
 basicDeclaration code = Just (RenderedDeclaration Nothing code [])
-
-declarationAsHtml :: LinksContext -> RenderedDeclaration -> H.Html
-declarationAsHtml ctx (RenderedDeclaration {..}) = do
-  para "decl" (H.code (asHtml ctx rdCode))
-  H.ul (mapM_ (H.li . H.code . asHtml ctx) rdChildren)
-  case rdComments of
-    Just cs -> cs
-    Nothing -> return ()
 
 renderDeclaration :: Maybe [P.DeclarationRef] -> P.Declaration -> Maybe RenderedDeclaration
 renderDeclaration _ (P.TypeDeclaration ident' ty) =
@@ -153,8 +74,8 @@ renderDeclaration exps (P.DataDeclaration dtype name args ctors) =
   exported = filter (P.isDctorExported name exps . fst) ctors
   code = keyword (show dtype) <> sp <> renderType typeApp
   children = map renderCtor exported
-  renderCtor (ctor, tys) =
-          let typeApp' = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing ctor)) tys
+  renderCtor (ctor', tys) =
+          let typeApp' = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing ctor')) tys
           in renderType typeApp'
 renderDeclaration _ (P.ExternDataDeclaration name kind') =
   basicDeclaration code
@@ -258,9 +179,6 @@ toTypeVar :: (String, Maybe P.Kind) -> P.Type
 toTypeVar (s, Nothing) = P.TypeVar s
 toTypeVar (s, Just k) = P.KindedType (P.TypeVar s) k
 
-for :: [a] -> (a -> b) -> [b]
-for = flip map
-
 renderType :: P.Type -> RenderedCode
 renderType =
   go 0
@@ -282,7 +200,8 @@ renderType =
     syntax "(" <> constraints <> syntax ")" <> sp
       <> syntax "=>" <> sp <> go n ty
     where
-    constraints = mintersperse (syntax "," <> sp) $ for deps $ \(pn, tys) ->
+    constraints = mintersperse (syntax "," <> sp) (map renderDep deps)
+    renderDep (pn, tys) =
         let instApp = foldl P.TypeApp (P.TypeConstructor pn) tys
         in  go 0 instApp
   go _ P.REmpty = syntax "()"
@@ -334,24 +253,3 @@ renderLabel (label, ty) =
 renderTail :: P.Type -> RenderedCode
 renderTail P.REmpty = mempty
 renderTail other = sp <> syntax "|" <> sp <> renderType other
-
-asHtml :: LinksContext -> RenderedCode -> H.Html
-asHtml ctx = outputWith elemAsHtml
-  where
-  elemAsHtml (Syntax x)  = withClass "syntax" (text x)
-  elemAsHtml (Ident x)   = withClass "ident" (text x)
-  elemAsHtml (Ctor x mn) = linkToConstructor ctx x mn (withClass "ctor" (text x))
-  elemAsHtml (Kind x)    = text x
-  elemAsHtml (Keyword x) = withClass "keyword" (text x)
-  elemAsHtml Space       = text " "
-
-linkToConstructor :: LinksContext -> String -> Maybe P.ModuleName -> H.Html -> H.Html
-linkToConstructor (bookmarks, srcMn) ctor mn contents
-  | (fromMaybe srcMn mn, ctor) `notElem` bookmarks = contents
-  | otherwise = case mn of
-      Nothing -> linkTo ('#' : ctor) contents
-      Just destMn ->
-        let uri = filePathFor destMn `relativeTo` filePathFor srcMn
-        in  linkTo (uri ++ "#" ++ ctor) contents
-    where
-    linkTo href inner = H.a ! A.href (fromString href) $ inner
