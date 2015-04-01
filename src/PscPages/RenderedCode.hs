@@ -22,10 +22,12 @@ module PscPages.RenderedCode
 import Data.Foldable
 import Data.Monoid
 
+import qualified Language.PureScript as P
+
 data RenderedCodeElement
   = Syntax String
   | Ident String
-  | Ctor String (Maybe String) -- ^ Constructor text and optional containing module name.
+  | Ctor String (Maybe P.ModuleName) -- ^ Constructor text and optional containing module name.
   | Kind String
   | Keyword String
   | Space
@@ -47,7 +49,7 @@ syntax x = RC [Syntax x]
 ident :: String -> RenderedCode
 ident x = RC [Ident x]
 
-ctor :: String -> Maybe String -> RenderedCode
+ctor :: String -> Maybe P.ModuleName -> RenderedCode
 ctor x m = RC [Ctor x m]
 
 kind :: String -> RenderedCode

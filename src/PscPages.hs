@@ -98,13 +98,16 @@ moduleToHtml bookmarks (P.Module coms moduleName ds exps) =
     renderComments coms
     for_ (filter (P.isExported exps) ds) (declToHtml exps)
   where
+  linksContext :: LinksContext
+  linksContext = (bookmarks, moduleName)
+
   declToHtml :: Maybe [P.DeclarationRef] -> P.Declaration -> H.Html
   declToHtml exps decl = do
     for_ (getDeclarationTitle decl) $ \s ->
       H.a ! A.name (fromString s) ! A.href (fromString ('#' : s)) $
         H.h2 $ H.code $ text s
     case renderDeclaration exps decl of
-      Just rd -> H.toHtml rd
+      Just rd -> declarationAsHtml linksContext rd
       Nothing -> return ()
 
 data RenderedDeclaration = RenderedDeclaration
@@ -113,16 +116,22 @@ data RenderedDeclaration = RenderedDeclaration
   , rdChildren :: [RenderedCode]
   }
 
+-- A tuple containing:
+--    - bookmarks,
+--    - source module name (that is, the name of the module which is currently
+--      being generated)
+type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
+
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
 basicDeclaration code = Just (RenderedDeclaration Nothing code [])
 
-instance H.ToMarkup RenderedDeclaration where
-  toMarkup (RenderedDeclaration {..}) = do
-    para "decl" (H.code (asHtml rdCode))
-    H.ul (mapM_ (H.li . H.code . asHtml) rdChildren)
-    case rdComments of
-      Just cs -> cs
-      Nothing -> return ()
+declarationAsHtml :: LinksContext -> RenderedDeclaration -> H.Html
+declarationAsHtml ctx (RenderedDeclaration {..}) = do
+  para "decl" (H.code (asHtml ctx rdCode))
+  H.ul (mapM_ (H.li . H.code . asHtml ctx) rdChildren)
+  case rdComments of
+    Just cs -> cs
+    Nothing -> return ()
 
 renderDeclaration :: Maybe [P.DeclarationRef] -> P.Declaration -> Maybe RenderedDeclaration
 renderDeclaration _ (P.TypeDeclaration ident' ty) =
@@ -245,13 +254,6 @@ renderComments cs = do
   dropPipe ('|':s) = s
   dropPipe s = s
 
-linkToConstructor :: P.ModuleName -> [(P.ModuleName, String)] -> P.Qualified P.ProperName -> H.Html -> H.Html
-linkToConstructor srcModule bookmarks (P.Qualified mn ctor) contents | (fromMaybe srcModule mn, show ctor) `notElem` bookmarks = contents
-linkToConstructor _ _ (P.Qualified Nothing ctor) contents = H.a ! A.href (fromString ('#' : show ctor)) $ contents
-linkToConstructor srcModule _ (P.Qualified (Just destModule) ctor) contents = H.a ! A.href (fromString (uri ++ "#" ++ show ctor)) $ contents
-  where
-  uri = filePathFor destModule `relativeTo` filePathFor srcModule
-
 toTypeVar :: (String, Maybe P.Kind) -> P.Type
 toTypeVar (s, Nothing) = P.TypeVar s
 toTypeVar (s, Just k) = P.KindedType (P.TypeVar s) k
@@ -274,8 +276,8 @@ renderType =
     syntax "{" <> sp <> renderRow row <> sp <> syntax "}"
   go _ (P.PrettyPrintArray ty) =
     syntax "[" <> go 0 ty <> syntax "]"
-  go _ (P.TypeConstructor ctor'@(P.Qualified _ name)) =
-    ctor (show ctor') (Just (show name))
+  go _ (P.TypeConstructor (P.Qualified mn name)) =
+    ctor (show name) mn
   go n (P.ConstrainedType deps ty) =
     syntax "(" <> constraints <> syntax ")" <> sp
       <> syntax "=>" <> sp <> go n ty
@@ -297,9 +299,6 @@ renderType =
     go n ty1 <> sp <> go (n + 1) ty2
   go _ ty = do
     syntax "(" <> go 0 ty <> syntax ")"
-
-typeToHtml :: P.Type -> H.Html
-typeToHtml = asHtml . renderType
 
 dePrim :: P.Type -> P.Type
 dePrim ty@(P.TypeConstructor (P.Qualified _ name))
@@ -336,13 +335,23 @@ renderTail :: P.Type -> RenderedCode
 renderTail P.REmpty = mempty
 renderTail other = sp <> syntax "|" <> sp <> renderType other
 
--- TODO: constructor links
-asHtml :: RenderedCode -> H.Html
-asHtml = outputWith elemAsHtml
+asHtml :: LinksContext -> RenderedCode -> H.Html
+asHtml ctx = outputWith elemAsHtml
   where
   elemAsHtml (Syntax x)  = withClass "syntax" (text x)
   elemAsHtml (Ident x)   = withClass "ident" (text x)
-  elemAsHtml (Ctor x _)  = withClass "ctor" (text x)
+  elemAsHtml (Ctor x mn) = linkToConstructor ctx x mn (withClass "ctor" (text x))
   elemAsHtml (Kind x)    = text x
   elemAsHtml (Keyword x) = withClass "keyword" (text x)
   elemAsHtml Space       = text " "
+
+linkToConstructor :: LinksContext -> String -> Maybe P.ModuleName -> H.Html -> H.Html
+linkToConstructor (bookmarks, srcMn) ctor mn contents
+  | (fromMaybe srcMn mn, ctor) `notElem` bookmarks = contents
+  | otherwise = case mn of
+      Nothing -> linkTo ('#' : ctor) contents
+      Just destMn ->
+        let uri = filePathFor destMn `relativeTo` filePathFor srcMn
+        in  linkTo (uri ++ "#" ++ ctor) contents
+    where
+    linkTo href inner = H.a ! A.href (fromString href) $ inner
