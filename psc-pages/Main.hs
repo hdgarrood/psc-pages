@@ -39,7 +39,9 @@ import qualified Text.Blaze.Html5.Attributes as A
 
 import Data.FileEmbed
 
-import PscPages
+import PscPages.Render
+import PscPages.HtmlHelpers
+import PscPages.AsHtml
 
 app :: ([FilePath], FilePath) -> IO ()
 app (input, outputDir) = do
@@ -51,8 +53,8 @@ app (input, outputDir) = do
       exitFailure
     Right ms ->
       case P.sortModules . map (importPrim . importPrelude . snd) $ ms of
-        Left e -> do
-          hPutStrLn stderr e
+        Left e' -> do
+          hPutStrLn stderr e'
           exitFailure
         Right (ms', _) ->
           case desugar ms' of
@@ -60,39 +62,39 @@ app (input, outputDir) = do
               hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
             Right modules -> do
-              let bookmarks = concatMap collectBookmarks modules    
-                
+              let bookmarks = concatMap collectBookmarks modules
+
               let stylesheetFile = outputDir </> "style.css"
               mkdirp stylesheetFile
               T.writeFile stylesheetFile stylesheet
-              
+
               let bootstrapFile = outputDir </> "bootstrap.min.css"
               mkdirp bootstrapFile
               T.writeFile bootstrapFile bootstrap
-              
+
               let contentsFile = outputDir </> "index.html"
               TL.writeFile contentsFile (H.renderHtml $ contentsPageHtml modules)
-              
+
               let indexFile = outputDir </> "index/index.html"
               mkdirp indexFile
               TL.writeFile indexFile (H.renderHtml indexPageHtml)
-              
+
               for_ ['a'..'z'] $ \c -> do
                 let letterFile = outputDir </> ("index/" ++ c : ".html")
                 TL.writeFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
-              
+
               for_ modules (renderModule outputDir bookmarks)
               exitSuccess
   where
   stylesheet :: T.Text
   stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
- 
+
   bootstrap :: T.Text
   bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
 
   parseFile :: FilePath -> IO (FilePath, String)
-  parseFile input = (,) input <$> readFile input
-  
+  parseFile input' = (,) input' <$> readFile input'
+
   addDefaultImport :: P.ModuleName -> P.Module -> P.Module
   addDefaultImport toImport m@(P.Module coms mn decls exps)  =
     if isExistingImport `any` decls || mn == toImport then m
@@ -107,15 +109,15 @@ app (input, outputDir) = do
 
   importPrelude :: P.Module -> P.Module
   importPrelude = addDefaultImport (P.ModuleName [P.ProperName C.prelude])
-  
+
   desugar :: [P.Module] -> Either P.MultipleErrors [P.Module]
   desugar = P.evalSupplyT 0 . desugar'
     where
     desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
     desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
-    
+
 renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
-renderModule outputDir bookmarks m@(P.Module _ moduleName _ exps) = do
+renderModule outputDir bookmarks m@(P.Module _ moduleName _ _) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml bookmarks m
   mkdirp filename
@@ -134,9 +136,9 @@ contentsPageHtml ms = do
 indexPageHtml :: H.Html
 indexPageHtml = do
   template "index/index.html" "Index" $ do
-    H.ul $ for_ ['a'..'z'] $ \c -> 
+    H.ul $ for_ ['a'..'z'] $ \c ->
       H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
-      
+
 letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
 letterPageHtml c bs = do
   let filename = "index/" ++ c : ".html"
@@ -145,20 +147,20 @@ letterPageHtml c bs = do
       H.a ! A.href (fromString ((filePathFor mn `relativeTo` filename) ++ "#" ++ s)) $ text s
       sp *> text ("(" ++ show mn ++ ")")
   where
-  matches (_, (c':_)) = toUpper c == toUpper c' 
+  matches (_, (c':_)) = toUpper c == toUpper c'
   matches _ = False
-  
+
 
 inputFiles :: Parser [FilePath]
 inputFiles = many . strArgument $
      metavar "FILE"
   <> help "The input .purs file(s)"
-  
+
 outputDirectory :: Parser FilePath
 outputDirectory = strOption $
      short 'o'
   <> long "output"
-  <> help "The output .js file"
+  <> help "The output directory for HTML files"
 
 main :: IO ()
 main = execParser opts >>= app
