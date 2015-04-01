@@ -7,6 +7,7 @@ module PscPages.Render where
 -- | Functions and data types for rendering generated documentation for
 -- | PureScript code. 
 
+import Control.Applicative
 import Control.Monad
 import Data.Monoid ((<>), mempty, Monoid)
 import Data.Default (def)
@@ -22,14 +23,15 @@ import PscPages.RenderedCode
 import qualified Cheapskate
 
 getDeclarationTitle :: P.Declaration -> Maybe String
-getDeclarationTitle (P.TypeDeclaration name _)          = Just (show name)
-getDeclarationTitle (P.ExternDeclaration _ name _ _)    = Just (show name)
-getDeclarationTitle (P.DataDeclaration _ name _ _)      = Just (show name)
-getDeclarationTitle (P.ExternDataDeclaration name _)    = Just (show name)
-getDeclarationTitle (P.TypeSynonymDeclaration name _ _) = Just (show name)
-getDeclarationTitle (P.TypeClassDeclaration name _ _ _) = Just (show name)
-getDeclarationTitle (P.PositionedDeclaration _ _ d)     = getDeclarationTitle d
-getDeclarationTitle _                                   = Nothing
+getDeclarationTitle (P.TypeDeclaration name _)               = Just (show name)
+getDeclarationTitle (P.ExternDeclaration _ name _ _)         = Just (show name)
+getDeclarationTitle (P.DataDeclaration _ name _ _)           = Just (show name)
+getDeclarationTitle (P.ExternDataDeclaration name _)         = Just (show name)
+getDeclarationTitle (P.TypeSynonymDeclaration name _ _)      = Just (show name)
+getDeclarationTitle (P.TypeClassDeclaration name _ _ _)      = Just (show name)
+getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _) = Just (show name)
+getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTitle d
+getDeclarationTitle _                                        = Nothing
 
 collectBookmarks :: P.Module -> [(P.ModuleName, String)]
 collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
@@ -45,6 +47,18 @@ data RenderedDeclaration = RenderedDeclaration
   , rdChildren :: [RenderedCode]
   }
 
+data RenderedModule = RenderedModule
+  { rmComments :: Maybe H.Html
+  , rmDeclarations :: [(String, RenderedDeclaration)]
+  }
+
+renderModule :: P.Module -> RenderedModule
+renderModule m@(P.Module coms _ _ exps) =
+  RenderedModule comments declarations
+  where
+  comments = renderComments coms
+  declarations = mapMaybe go (P.exportedDeclarations m)
+  go decl = (,) <$> getDeclarationTitle decl <*> renderDeclaration exps decl
 
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
 basicDeclaration code = Just (RenderedDeclaration Nothing code [])
