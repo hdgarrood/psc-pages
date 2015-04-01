@@ -7,6 +7,7 @@ module PscPages.Render where
 -- | Functions and data types for rendering generated documentation for
 -- | PureScript code. 
 
+import Control.Applicative
 import Control.Monad
 import Data.Monoid ((<>), mempty, Monoid)
 import Data.Default (def)
@@ -22,14 +23,15 @@ import PscPages.RenderedCode
 import qualified Cheapskate
 
 getDeclarationTitle :: P.Declaration -> Maybe String
-getDeclarationTitle (P.TypeDeclaration name _)          = Just (show name)
-getDeclarationTitle (P.ExternDeclaration _ name _ _)    = Just (show name)
-getDeclarationTitle (P.DataDeclaration _ name _ _)      = Just (show name)
-getDeclarationTitle (P.ExternDataDeclaration name _)    = Just (show name)
-getDeclarationTitle (P.TypeSynonymDeclaration name _ _) = Just (show name)
-getDeclarationTitle (P.TypeClassDeclaration name _ _ _) = Just (show name)
-getDeclarationTitle (P.PositionedDeclaration _ _ d)     = getDeclarationTitle d
-getDeclarationTitle _                                   = Nothing
+getDeclarationTitle (P.TypeDeclaration name _)               = Just (show name)
+getDeclarationTitle (P.ExternDeclaration _ name _ _)         = Just (show name)
+getDeclarationTitle (P.DataDeclaration _ name _ _)           = Just (show name)
+getDeclarationTitle (P.ExternDataDeclaration name _)         = Just (show name)
+getDeclarationTitle (P.TypeSynonymDeclaration name _ _)      = Just (show name)
+getDeclarationTitle (P.TypeClassDeclaration name _ _ _)      = Just (show name)
+getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _) = Just (show name)
+getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTitle d
+getDeclarationTitle _                                        = Nothing
 
 collectBookmarks :: P.Module -> [(P.ModuleName, String)]
 collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
@@ -45,11 +47,18 @@ data RenderedDeclaration = RenderedDeclaration
   , rdChildren :: [RenderedCode]
   }
 
--- A tuple containing:
---    - bookmarks,
---    - source module name (that is, the name of the module which is currently
---      being generated)
-type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
+data RenderedModule = RenderedModule
+  { rmComments :: Maybe H.Html
+  , rmDeclarations :: [(String, RenderedDeclaration)]
+  }
+
+renderModule :: P.Module -> RenderedModule
+renderModule m@(P.Module coms _ _ exps) =
+  RenderedModule comments declarations
+  where
+  comments = renderComments coms
+  declarations = mapMaybe go (P.exportedDeclarations m)
+  go decl = (,) <$> getDeclarationTitle decl <*> renderDeclaration exps decl
 
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
 basicDeclaration code = Just (RenderedDeclaration Nothing code [])
@@ -152,17 +161,21 @@ renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _)
   classApp = foldl P.TypeApp (P.TypeConstructor className) tys
 renderDeclaration exps (P.PositionedDeclaration _ com d) =
   case renderDeclaration exps d of
-    Just rd -> Just (rd { rdComments = Just (renderComments com) })
+    Just rd -> Just (rd { rdComments = renderComments com })
     other -> other
 renderDeclaration _ _ = Nothing
 
-renderComments :: [P.Comment] -> H.Html
+renderComments :: [P.Comment] -> Maybe H.Html
 renderComments cs = do
   let raw = concatMap toLines cs
-
-  when (all hasPipe raw) $
-    H.toHtml . Cheapskate.markdown def . fromString . unlines . map stripPipes $ raw
+  guard (all hasPipe raw)
+  return (go raw)
   where
+  go = H.toHtml
+       . Cheapskate.markdown def
+       . fromString
+       . unlines
+       . map stripPipes
 
   toLines (P.LineComment s) = [s]
   toLines (P.BlockComment s) = lines s

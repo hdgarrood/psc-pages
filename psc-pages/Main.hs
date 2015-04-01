@@ -83,7 +83,7 @@ app (input, outputDir) = do
                 let letterFile = outputDir </> ("index/" ++ c : ".html")
                 TL.writeFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
 
-              for_ modules (renderModule outputDir bookmarks)
+              for_ modules (renderModule' outputDir bookmarks)
               exitSuccess
   where
   stylesheet :: T.Text
@@ -116,8 +116,8 @@ app (input, outputDir) = do
     desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
     desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
 
-renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
-renderModule outputDir bookmarks m@(P.Module _ moduleName _ _) = do
+renderModule' :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
+renderModule' outputDir bookmarks m@(P.Module _ moduleName _ _) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml bookmarks m
   mkdirp filename

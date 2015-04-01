@@ -25,6 +25,12 @@ import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
 
+-- A tuple containing:
+--    - bookmarks,
+--    - source module name (that is, the name of the module which is currently
+--      being generated)
+type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
+
 template :: FilePath -> String -> H.Html -> H.Html
 template curFile title body = do
   H.docType
@@ -59,25 +65,21 @@ filePathFor (P.ModuleName parts) = go parts
   go (x : xs) = show x </> go xs
 
 moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
-moduleToHtml bookmarks (P.Module coms moduleName ds exps) =
+moduleToHtml bookmarks m =
   template (filePathFor moduleName) (show moduleName) $ do
-    renderComments coms
-    for_ (filter (P.isExported exps) ds) (declToHtml linksContext exps)
+    for_ (rmComments rm) id
+    for_ (rmDeclarations rm) (declToHtml linksContext)
   where
+  rm = renderModule m
+  moduleName = P.getModuleName m
+
   linksContext :: LinksContext
   linksContext = (bookmarks, moduleName)
 
-declToHtml :: LinksContext -> Maybe [P.DeclarationRef] -> P.Declaration -> H.Html
-declToHtml ctx exps decl = do
-  for_ (getDeclarationTitle decl) $ \s ->
-    H.a ! A.name (fromString s) ! A.href (fromString ('#' : s)) $
-      H.h2 $ H.code $ text s
-  case renderDeclaration exps decl of
-    Just rd -> renderedDeclAsHtml ctx rd
-    Nothing -> return ()
-
-renderedDeclAsHtml :: LinksContext -> RenderedDeclaration -> H.Html
-renderedDeclAsHtml ctx (RenderedDeclaration {..}) = do
+declToHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
+declToHtml ctx (title, RenderedDeclaration{..}) = do
+  H.a ! A.name (fromString title) ! A.href (fromString ('#' : title)) $
+    H.h2 $ H.code $ text title
   para "decl" (H.code (renderedCodeAsHtml ctx rdCode))
   H.ul (mapM_ (H.li . H.code . renderedCodeAsHtml ctx) rdChildren)
   case rdComments of
