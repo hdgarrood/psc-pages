@@ -25,6 +25,12 @@ import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
 
+-- A tuple containing:
+--    - bookmarks,
+--    - source module name (that is, the name of the module which is currently
+--      being generated)
+type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
+
 template :: FilePath -> String -> H.Html -> H.Html
 template curFile title body = do
   H.docType

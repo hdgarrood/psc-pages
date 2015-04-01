@@ -45,11 +45,6 @@ data RenderedDeclaration = RenderedDeclaration
   , rdChildren :: [RenderedCode]
   }
 
--- A tuple containing:
---    - bookmarks,
---    - source module name (that is, the name of the module which is currently
---      being generated)
-type LinksContext = ([(P.ModuleName, String)], P.ModuleName)
 
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
 basicDeclaration code = Just (RenderedDeclaration Nothing code [])
