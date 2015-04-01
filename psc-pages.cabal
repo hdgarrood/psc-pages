@@ -25,6 +25,7 @@ library
                        filepath,
                        split
   exposed-modules:     PscPages
+                     , PscPages.RenderedCode
 
 executable psc-pages
   main-is:             Main.hs
@@ -40,7 +41,7 @@ executable psc-pages
                        text,
                        filepath,
                        directory,
-                       file-embed,
+                       file-embed
   hs-source-dirs:      psc-pages
   ghc-options:         -Wall
   default-language:    Haskell2010

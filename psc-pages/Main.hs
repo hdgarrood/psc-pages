@@ -10,7 +10,7 @@ import Data.Ord (comparing)
 import Data.Char (toUpper)
 import Data.List (nub, sortBy)
 import Data.String (fromString)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Version (showVersion)
 import Data.Foldable (for_)
 
@@ -113,6 +113,9 @@ app (input, outputDir) = do
     where
     desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
     desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
+
+collectBookmarks :: P.Module -> [(P.ModuleName, String)]
+collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
     
 renderModule :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
 renderModule outputDir bookmarks m@(P.Module _ moduleName _ exps) = do
@@ -136,6 +139,9 @@ indexPageHtml = do
   template "index/index.html" "Index" $ do
     H.ul $ for_ ['a'..'z'] $ \c -> 
       H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
+
+sp :: H.Html
+sp = text " "
       
 letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
 letterPageHtml c bs = do
