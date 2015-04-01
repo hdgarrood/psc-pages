@@ -164,7 +164,7 @@ outputDirectory :: Parser FilePath
 outputDirectory = strOption $
      short 'o'
   <> long "output"
-  <> help "The output .js file"
+  <> help "The output directory for HTML files"
 
 main :: IO ()
 main = execParser opts >>= app
