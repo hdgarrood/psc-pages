@@ -152,17 +152,21 @@ renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _)
   classApp = foldl P.TypeApp (P.TypeConstructor className) tys
 renderDeclaration exps (P.PositionedDeclaration _ com d) =
   case renderDeclaration exps d of
-    Just rd -> Just (rd { rdComments = Just (renderComments com) })
+    Just rd -> Just (rd { rdComments = renderComments com })
     other -> other
 renderDeclaration _ _ = Nothing
 
-renderComments :: [P.Comment] -> H.Html
+renderComments :: [P.Comment] -> Maybe H.Html
 renderComments cs = do
   let raw = concatMap toLines cs
-
-  when (all hasPipe raw) $
-    H.toHtml . Cheapskate.markdown def . fromString . unlines . map stripPipes $ raw
+  guard (all hasPipe raw)
+  return (go raw)
   where
+  go = H.toHtml
+       . Cheapskate.markdown def
+       . fromString
+       . unlines
+       . map stripPipes
 
   toLines (P.LineComment s) = [s]
   toLines (P.BlockComment s) = lines s

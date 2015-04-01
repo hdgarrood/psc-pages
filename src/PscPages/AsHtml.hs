@@ -61,7 +61,7 @@ filePathFor (P.ModuleName parts) = go parts
 moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
 moduleToHtml bookmarks (P.Module coms moduleName ds exps) =
   template (filePathFor moduleName) (show moduleName) $ do
-    renderComments coms
+    for_ (renderComments coms) id
     for_ (filter (P.isExported exps) ds) (declToHtml linksContext exps)
   where
   linksContext :: LinksContext
