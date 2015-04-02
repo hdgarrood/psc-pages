@@ -30,6 +30,7 @@ import System.Exit (exitSuccess, exitFailure)
 import System.IO (hPutStrLn, stderr)
 import System.FilePath ((</>), takeDirectory)
 import System.Directory (createDirectoryIfMissing)
+import qualified System.FilePath.Glob as Glob
 
 import Text.Blaze.Html ((!))
 import qualified Text.Blaze.Html as H
@@ -42,31 +43,68 @@ import Data.FileEmbed
 import PscPages.Render
 import PscPages.HtmlHelpers
 import PscPages.AsHtml
+import PscPages.AsHoogle
 
 app :: ([FilePath], FilePath) -> IO ()
 app (input, outputDir) =
-  parseAndDesugar input (outputAsHtml outputDir)
+  parseAndDesugar input [] (outputAsHtml outputDir)
 
-parseAndDesugar :: [FilePath] -> ([P.Module] -> IO ()) -> IO ()
-parseAndDesugar input f = do
-  files <- mapM (fmap (first Just) . parseFile) (nub input)
-  let e = P.parseModulesFromFiles (fromMaybe "") ((Nothing, P.prelude) : files)
-  case e of
+appHoogle :: String -> String -> FilePath -> FilePath -> IO ()
+appHoogle name vers inputDir outputFile = do
+  let srcPattern = Glob.compile "src/**/*.purs"
+      depsPattern = Glob.compile "bower_components/*/src/**/*.purs"
+  inputFiles <- Glob.globDir1 srcPattern inputDir
+  depsFiles <- Glob.globDir1 depsPattern inputDir
+  parseAndDesugar inputFiles depsFiles
+    (T.writeFile outputFile . outputPackageAsHoogle name vers)
+
+data FileInfo
+  = TargetModule FilePath
+  | DepsModule FilePath
+
+fileInfoToString :: FileInfo -> String
+fileInfoToString (TargetModule fn) = fn
+fileInfoToString (DepsModule fn) = fn
+
+isTarget :: FileInfo -> Bool
+isTarget (TargetModule _) = True
+isTarget _ = False
+
+parseAndDesugar :: [FilePath] -> [FilePath] -> ([P.Module] -> IO ()) -> IO ()
+parseAndDesugar inputFiles depsFiles f = do
+  inputFiles' <- parseAs TargetModule inputFiles
+  depsFiles'  <- parseAs DepsModule depsFiles
+  let allFiles = (DepsModule "Prelude", P.prelude) : (inputFiles' ++ depsFiles')
+
+  case P.parseModulesFromFiles fileInfoToString allFiles of
     Left err -> do
+      hPutStrLn stderr "parse failed:"
       hPutStrLn stderr $ show err
       exitFailure
-    Right ms ->
+    Right ms -> do
+      let targetModuleNames = map (P.getModuleName . snd) $ filter (isTarget . fst) ms
       case P.sortModules . map (importPrim . importPrelude . snd) $ ms of
         Left e' -> do
+          hPutStrLn stderr "sortModules failed:"
           hPutStrLn stderr e'
           exitFailure
         Right (ms', _) ->
           case desugar ms' of
             Left err -> do
+              hPutStrLn stderr "desugar failed:"
               hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
-            Right modules -> f modules
+            Right modules ->
+              let modules' = filter ((`elem` targetModuleNames) . P.getModuleName) modules
+              in  f modules'
 
+  where
+  parseAs :: (FilePath -> a) -> [FilePath] -> IO [(a, String)]
+  parseAs f = fmap (map (first f)) . mapM parseFile . nub
+
+outputPackageAsHoogle :: String -> String -> [P.Module] -> T.Text
+outputPackageAsHoogle name vers modules =
+  renderPackageAsText (renderPackage name vers modules)
 
 outputAsHtml :: FilePath -> [P.Module] -> IO ()
 outputAsHtml outputDir modules = do
@@ -159,13 +197,13 @@ letterPageHtml c bs = do
   matches _ = False
 
 
-inputFiles :: Parser [FilePath]
-inputFiles = many . strArgument $
+inputFilesP :: Parser [FilePath]
+inputFilesP = many . strArgument $
      metavar "FILE"
   <> help "The input .purs file(s)"
 
-outputDirectory :: Parser FilePath
-outputDirectory = strOption $
+outputDirectoryP :: Parser FilePath
+outputDirectoryP = strOption $
      short 'o'
   <> long "output"
   <> help "The output directory for HTML files"
@@ -173,7 +211,7 @@ outputDirectory = strOption $
 main :: IO ()
 main = execParser opts >>= app
   where
-  opts        = info (helper <*> ((,) <$> inputFiles <*> outputDirectory)) infoModList
+  opts        = info (helper <*> ((,) <$> inputFilesP <*> outputDirectoryP)) infoModList
   infoModList = fullDesc <> headerInfo <> footerInfo
   headerInfo  = header   "psc-pages - Generate HTML documentation from PureScript source files"
   footerInfo  = footer $ "psc-pages " ++ showVersion Paths.version
