@@ -44,7 +44,11 @@ import PscPages.HtmlHelpers
 import PscPages.AsHtml
 
 app :: ([FilePath], FilePath) -> IO ()
-app (input, outputDir) = do
+app (input, outputDir) =
+  parseAndDesugar input (outputAsHtml outputDir)
+
+parseAndDesugar :: [FilePath] -> ([P.Module] -> IO ()) -> IO ()
+parseAndDesugar input f = do
   files <- mapM (fmap (first Just) . parseFile) (nub input)
   let e = P.parseModulesFromFiles (fromMaybe "") ((Nothing, P.prelude) : files)
   case e of
@@ -61,60 +65,64 @@ app (input, outputDir) = do
             Left err -> do
               hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
-            Right modules -> do
-              let bookmarks = concatMap collectBookmarks modules
+            Right modules -> f modules
 
-              let stylesheetFile = outputDir </> "style.css"
-              mkdirp stylesheetFile
-              T.writeFile stylesheetFile stylesheet
 
-              let bootstrapFile = outputDir </> "bootstrap.min.css"
-              mkdirp bootstrapFile
-              T.writeFile bootstrapFile bootstrap
+outputAsHtml :: FilePath -> [P.Module] -> IO ()
+outputAsHtml outputDir modules = do
+  let bookmarks = concatMap collectBookmarks modules
 
-              let contentsFile = outputDir </> "index.html"
-              TL.writeFile contentsFile (H.renderHtml $ contentsPageHtml modules)
+  let stylesheetFile = outputDir </> "style.css"
+  mkdirp stylesheetFile
+  T.writeFile stylesheetFile stylesheet
 
-              let indexFile = outputDir </> "index/index.html"
-              mkdirp indexFile
-              TL.writeFile indexFile (H.renderHtml indexPageHtml)
+  let bootstrapFile = outputDir </> "bootstrap.min.css"
+  mkdirp bootstrapFile
+  T.writeFile bootstrapFile bootstrap
 
-              for_ ['a'..'z'] $ \c -> do
-                let letterFile = outputDir </> ("index/" ++ c : ".html")
-                TL.writeFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
+  let contentsFile = outputDir </> "index.html"
+  TL.writeFile contentsFile (H.renderHtml $ contentsPageHtml modules)
 
-              for_ modules (renderModule' outputDir bookmarks)
-              exitSuccess
+  let indexFile = outputDir </> "index/index.html"
+  mkdirp indexFile
+  TL.writeFile indexFile (H.renderHtml indexPageHtml)
+
+  for_ ['a'..'z'] $ \c -> do
+    let letterFile = outputDir </> ("index/" ++ c : ".html")
+    TL.writeFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
+
+  for_ modules (renderModule' outputDir bookmarks)
+  exitSuccess
+
+stylesheet :: T.Text
+stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
+
+bootstrap :: T.Text
+bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
+
+parseFile :: FilePath -> IO (FilePath, String)
+parseFile input' = (,) input' <$> readFile input'
+
+addDefaultImport :: P.ModuleName -> P.Module -> P.Module
+addDefaultImport toImport m@(P.Module coms mn decls exps)  =
+  if isExistingImport `any` decls || mn == toImport then m
+  else P.Module coms mn (P.ImportDeclaration toImport P.Implicit Nothing : decls) exps
   where
-  stylesheet :: T.Text
-  stylesheet = T.decodeUtf8 $(embedFile "static/style.css")
+  isExistingImport (P.ImportDeclaration mn' _ _) | mn' == toImport = True
+  isExistingImport (P.PositionedDeclaration _ _ d) = isExistingImport d
+  isExistingImport _ = False
 
-  bootstrap :: T.Text
-  bootstrap = T.decodeUtf8 $(embedFile "static/bootstrap.min.css")
+importPrim :: P.Module -> P.Module
+importPrim = addDefaultImport (P.ModuleName [P.ProperName C.prim])
 
-  parseFile :: FilePath -> IO (FilePath, String)
-  parseFile input' = (,) input' <$> readFile input'
+importPrelude :: P.Module -> P.Module
+importPrelude = addDefaultImport (P.ModuleName [P.ProperName C.prelude])
 
-  addDefaultImport :: P.ModuleName -> P.Module -> P.Module
-  addDefaultImport toImport m@(P.Module coms mn decls exps)  =
-    if isExistingImport `any` decls || mn == toImport then m
-    else P.Module coms mn (P.ImportDeclaration toImport P.Implicit Nothing : decls) exps
-    where
-    isExistingImport (P.ImportDeclaration mn' _ _) | mn' == toImport = True
-    isExistingImport (P.PositionedDeclaration _ _ d) = isExistingImport d
-    isExistingImport _ = False
-
-  importPrim :: P.Module -> P.Module
-  importPrim = addDefaultImport (P.ModuleName [P.ProperName C.prim])
-
-  importPrelude :: P.Module -> P.Module
-  importPrelude = addDefaultImport (P.ModuleName [P.ProperName C.prelude])
-
-  desugar :: [P.Module] -> Either P.MultipleErrors [P.Module]
-  desugar = P.evalSupplyT 0 . desugar'
-    where
-    desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
-    desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
+desugar :: [P.Module] -> Either P.MultipleErrors [P.Module]
+desugar = P.evalSupplyT 0 . desugar'
+  where
+  desugar' :: [P.Module] -> P.SupplyT (Either P.MultipleErrors) [P.Module]
+  desugar' = mapM P.desugarDoModule >=> P.desugarCasesModule >=> P.desugarImports
 
 renderModule' :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
 renderModule' outputDir bookmarks m@(P.Module _ moduleName _ _) = do
