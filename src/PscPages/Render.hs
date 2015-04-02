@@ -41,20 +41,31 @@ mintersperse _ []       = mempty
 mintersperse _ [x]      = x
 mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
 
+data RenderedPackage = RenderedPackage
+  { rpName :: String
+  , rpVersion :: String
+  , rpModules :: [RenderedModule]
+  }
+
+data RenderedModule = RenderedModule
+  { rmName :: String
+  , rmComments :: Maybe H.Html
+  , rmDeclarations :: [(String, RenderedDeclaration)]
+  }
+
 data RenderedDeclaration = RenderedDeclaration
   { rdComments :: Maybe H.Html
   , rdCode     :: RenderedCode
   , rdChildren :: [RenderedCode]
   }
 
-data RenderedModule = RenderedModule
-  { rmComments :: Maybe H.Html
-  , rmDeclarations :: [(String, RenderedDeclaration)]
-  }
+renderPackage :: String -> String -> [P.Module] -> RenderedPackage
+renderPackage name vers mods =
+  RenderedPackage name vers (map renderModule mods)
 
 renderModule :: P.Module -> RenderedModule
-renderModule m@(P.Module coms _ _ exps) =
-  RenderedModule comments declarations
+renderModule m@(P.Module coms moduleName  _ exps) =
+  RenderedModule (show moduleName) comments declarations
   where
   comments = renderComments coms
   declarations = mapMaybe go (P.exportedDeclarations m)
@@ -168,7 +179,7 @@ renderDeclaration _ _ = Nothing
 renderComments :: [P.Comment] -> Maybe H.Html
 renderComments cs = do
   let raw = concatMap toLines cs
-  guard (all hasPipe raw)
+  guard (all hasPipe raw && not (null raw))
   return (go raw)
   where
   go = H.toHtml
