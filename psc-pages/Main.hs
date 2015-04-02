@@ -61,7 +61,7 @@ data FileInfo
   = TargetModule FilePath
   | DepsModule FilePath
 
-fileInfoToString :: FileInfo -> String
+fileInfoToString :: FileInfo -> FilePath
 fileInfoToString (TargetModule fn) = fn
 fileInfoToString (DepsModule fn) = fn
 
