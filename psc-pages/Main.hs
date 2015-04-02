@@ -10,7 +10,6 @@ import Data.Ord (comparing)
 import Data.Char (toUpper)
 import Data.List (nub, sortBy)
 import Data.String (fromString)
-import Data.Maybe (fromMaybe)
 import Data.Version (showVersion)
 import Data.Foldable (for_)
 
@@ -100,7 +99,7 @@ parseAndDesugar inputFiles depsFiles f = do
 
   where
   parseAs :: (FilePath -> a) -> [FilePath] -> IO [(a, String)]
-  parseAs f = fmap (map (first f)) . mapM parseFile . nub
+  parseAs g = fmap (map (first g)) . mapM parseFile . nub
 
 outputPackageAsHoogle :: String -> String -> [P.Module] -> T.Text
 outputPackageAsHoogle name vers modules =
