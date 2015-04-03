@@ -22,6 +22,17 @@ import PscPages.RenderedCode
 
 import qualified Cheapskate
 
+mintersperse :: (Monoid m) => m -> [m] -> m
+mintersperse _ []       = mempty
+mintersperse _ [x]      = x
+mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
+
+type Bookmarks = [(P.ModuleName, String)]
+
+collectBookmarks :: P.Module -> Bookmarks
+collectBookmarks (P.Module _ moduleName ds _) =
+  map (moduleName, ) $ mapMaybe getDeclarationTitle ds
+
 getDeclarationTitle :: P.Declaration -> Maybe String
 getDeclarationTitle (P.TypeDeclaration name _)               = Just (show name)
 getDeclarationTitle (P.ExternDeclaration _ name _ _)         = Just (show name)
@@ -33,13 +44,17 @@ getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _) = Just (show name)
 getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTitle d
 getDeclarationTitle _                                        = Nothing
 
-collectBookmarks :: P.Module -> [(P.ModuleName, String)]
-collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
+data RenderedPackage = RenderedPackage
+  { rpName :: String
+  , rpVersion :: String
+  , rpModules :: [RenderedModule]
+  }
 
-mintersperse :: (Monoid m) => m -> [m] -> m
-mintersperse _ []       = mempty
-mintersperse _ [x]      = x
-mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
+data RenderedModule = RenderedModule
+  { rmName :: String
+  , rmComments :: Maybe H.Html
+  , rmDeclarations :: [(String, RenderedDeclaration)]
+  }
 
 data RenderedDeclaration = RenderedDeclaration
   { rdComments :: Maybe H.Html
@@ -47,14 +62,13 @@ data RenderedDeclaration = RenderedDeclaration
   , rdChildren :: [RenderedCode]
   }
 
-data RenderedModule = RenderedModule
-  { rmComments :: Maybe H.Html
-  , rmDeclarations :: [(String, RenderedDeclaration)]
-  }
+renderPackage :: String -> String -> [P.Module] -> RenderedPackage
+renderPackage name vers mods =
+  RenderedPackage name vers (map renderModule mods)
 
 renderModule :: P.Module -> RenderedModule
-renderModule m@(P.Module coms _ _ exps) =
-  RenderedModule comments declarations
+renderModule m@(P.Module coms moduleName  _ exps) =
+  RenderedModule (show moduleName) comments declarations
   where
   comments = renderComments coms
   declarations = mapMaybe go (P.exportedDeclarations m)
@@ -168,7 +182,7 @@ renderDeclaration _ _ = Nothing
 renderComments :: [P.Comment] -> Maybe H.Html
 renderComments cs = do
   let raw = concatMap toLines cs
-  guard (all hasPipe raw)
+  guard (all hasPipe raw && not (null raw))
   return (go raw)
   where
   go = H.toHtml
