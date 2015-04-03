@@ -18,8 +18,8 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import PscPages.Render
 import PscPages.RenderedCode
 
-renderPackageAsText :: RenderedPackage -> Text
-renderPackageAsText RenderedPackage{..} = preamble <> modules
+packageAsHoogle :: RenderedPackage -> Text
+packageAsHoogle RenderedPackage{..} = preamble <> modules
   where
   preamble =
     T.unlines [ "@package " <> T.pack rpName
@@ -27,30 +27,30 @@ renderPackageAsText RenderedPackage{..} = preamble <> modules
               , ""
               ]
   modules =
-    foldMap renderedModuleAsText rpModules
+    foldMap moduleAsHoogle rpModules
 
-renderedCodeAsText :: RenderedCode -> Text
-renderedCodeAsText = outputWith elemAsHtml
+codeAsHoogle :: RenderedCode -> Text
+codeAsHoogle = outputWith elemAsText
   where
-  elemAsHtml (Syntax x)  = T.pack x
-  elemAsHtml (Ident x)   = T.pack x
-  elemAsHtml (Ctor x _)  = T.pack x
-  elemAsHtml (Kind x)    = T.pack x
-  elemAsHtml (Keyword x) = T.pack x
-  elemAsHtml Space       = " "
+  elemAsText (Syntax x)  = T.pack x
+  elemAsText (Ident x)   = T.pack x
+  elemAsText (Ctor x _)  = T.pack x
+  elemAsText (Kind x)    = T.pack x
+  elemAsText (Keyword x) = T.pack x
+  elemAsText Space       = " "
 
-renderedDeclAsText :: RenderedDeclaration -> Text
-renderedDeclAsText RenderedDeclaration{..} =
-  renderCommentsAsText rdComments <> renderedCodeAsText rdCode
+declAsHoogle :: RenderedDeclaration -> Text
+declAsHoogle RenderedDeclaration{..} =
+  commentsAsHoogle rdComments <> codeAsHoogle rdCode
   where
 
-renderedModuleAsText :: RenderedModule -> Text
-renderedModuleAsText RenderedModule{..} =
-  renderCommentsAsText rmComments
+moduleAsHoogle :: RenderedModule -> Text
+moduleAsHoogle RenderedModule{..} =
+  commentsAsHoogle rmComments
     <> "module " <> T.pack rmName <> " where\n\n"
-    <> foldMap ((<> "\n\n") . renderedDeclAsText . snd) rmDeclarations
+    <> foldMap ((<> "\n\n") . declAsHoogle . snd) rmDeclarations
 
-renderCommentsAsText :: Maybe H.Html -> Text
-renderCommentsAsText =
+commentsAsHoogle :: Maybe H.Html -> Text
+commentsAsHoogle =
   maybe ""
         (LT.toStrict . LT.unlines . fmap ("-- | " <>) . LT.lines . renderHtml)

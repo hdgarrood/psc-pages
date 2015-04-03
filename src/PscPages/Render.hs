@@ -22,6 +22,17 @@ import PscPages.RenderedCode
 
 import qualified Cheapskate
 
+mintersperse :: (Monoid m) => m -> [m] -> m
+mintersperse _ []       = mempty
+mintersperse _ [x]      = x
+mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
+
+type Bookmarks = [(P.ModuleName, String)]
+
+collectBookmarks :: P.Module -> Bookmarks
+collectBookmarks (P.Module _ moduleName ds _) =
+  map (moduleName, ) $ mapMaybe getDeclarationTitle ds
+
 getDeclarationTitle :: P.Declaration -> Maybe String
 getDeclarationTitle (P.TypeDeclaration name _)               = Just (show name)
 getDeclarationTitle (P.ExternDeclaration _ name _ _)         = Just (show name)
@@ -32,14 +43,6 @@ getDeclarationTitle (P.TypeClassDeclaration name _ _ _)      = Just (show name)
 getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _) = Just (show name)
 getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTitle d
 getDeclarationTitle _                                        = Nothing
-
-collectBookmarks :: P.Module -> [(P.ModuleName, String)]
-collectBookmarks (P.Module _ moduleName ds _) = map (moduleName, ) $ mapMaybe getDeclarationTitle ds
-
-mintersperse :: (Monoid m) => m -> [m] -> m
-mintersperse _ []       = mempty
-mintersperse _ [x]      = x
-mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
 
 data RenderedPackage = RenderedPackage
   { rpName :: String

@@ -24,29 +24,24 @@ library
                        data-default,
                        filepath,
                        split,
-                       Glob
+                       Glob,
+                       transformers,
+                       mtl,
+                       optparse-applicative,
+                       directory,
+                       file-embed
   exposed-modules:     PscPages.RenderedCode
                      , PscPages.HtmlHelpers
                      , PscPages.Render
                      , PscPages.AsHtml
                      , PscPages.AsHoogle
+                     , PscPages.Output
+                     , PscPages.Program
+                     , Paths_psc_pages
 
 executable psc-pages
   main-is:             Main.hs
-  other-modules:
-  other-extensions:
-  build-depends:       base >=4.7 && <4.8,
-                       purescript >= 0.6.9.3 && < 0.7,
-                       psc-pages -any,
-                       blaze-html,
-                       transformers,
-                       mtl,
-                       optparse-applicative,
-                       text,
-                       filepath,
-                       directory,
-                       file-embed,
-                       Glob
+  build-depends:       base >=4.7 && <4.8, psc-pages -any
   hs-source-dirs:      psc-pages
   ghc-options:         -Wall
   default-language:    Haskell2010

@@ -68,7 +68,7 @@ moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
 moduleToHtml bookmarks m =
   template (filePathFor moduleName) (show moduleName) $ do
     for_ (rmComments rm) id
-    for_ (rmDeclarations rm) (declToHtml linksContext)
+    for_ (rmDeclarations rm) (declAsHtml linksContext)
   where
   rm = renderModule m
   moduleName = P.getModuleName m
@@ -76,18 +76,18 @@ moduleToHtml bookmarks m =
   linksContext :: LinksContext
   linksContext = (bookmarks, moduleName)
 
-declToHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
-declToHtml ctx (title, RenderedDeclaration{..}) = do
+declAsHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
+declAsHtml ctx (title, RenderedDeclaration{..}) = do
   H.a ! A.name (fromString title) ! A.href (fromString ('#' : title)) $
     H.h2 $ H.code $ text title
-  para "decl" (H.code (renderedCodeAsHtml ctx rdCode))
-  H.ul (mapM_ (H.li . H.code . renderedCodeAsHtml ctx) rdChildren)
+  para "decl" (H.code (codeAsHtml ctx rdCode))
+  H.ul (mapM_ (H.li . H.code . codeAsHtml ctx) rdChildren)
   case rdComments of
     Just cs -> cs
     Nothing -> return ()
 
-renderedCodeAsHtml :: LinksContext -> RenderedCode -> H.Html
-renderedCodeAsHtml ctx = outputWith elemAsHtml
+codeAsHtml :: LinksContext -> RenderedCode -> H.Html
+codeAsHtml ctx = outputWith elemAsHtml
   where
   elemAsHtml (Syntax x)  = withClass "syntax" (text x)
   elemAsHtml (Ident x)   = withClass "ident" (text x)
