@@ -15,8 +15,14 @@ import qualified Data.Text as T
 import qualified Text.Blaze.Html as H
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
+import qualified Language.PureScript as P
+
 import PscPages.Render
 import PscPages.RenderedCode
+
+outputPackageAsHoogle :: String -> String -> Bookmarks -> [P.Module] -> T.Text
+outputPackageAsHoogle name vers _ modules =
+  packageAsHoogle (renderPackage name vers modules)
 
 packageAsHoogle :: RenderedPackage -> Text
 packageAsHoogle RenderedPackage{..} = preamble <> modules

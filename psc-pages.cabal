@@ -20,6 +20,7 @@ library
                        cheapskate -any,
                        purescript >= 0.6.9.3 && < 0.7,
                        blaze-html,
+                       bytestring,
                        text,
                        data-default,
                        filepath,
@@ -36,6 +37,7 @@ library
                      , PscPages.AsHtml
                      , PscPages.AsHoogle
                      , PscPages.Output
+                     , PscPages.IOUtils
                      , PscPages.Program
                      , Paths_psc_pages
 
