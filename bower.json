@@ -43,7 +43,8 @@
     "purescript-tailrec": "*",
     "purescript-monad-eff": "*",
     "purescript-semirings": "*",
-    "purescript-parallel": "*"
+    "purescript-parallel": "*",
+    "purescript-integers": "*"
   },
   "resolutions": {
     "purescript-monoid": "~0.2.0",
