@@ -77,10 +77,19 @@ parseFile input' = (,) input' <$> readFile input'
 -- dependencies files, but the list of modules which are passed to the output
 -- function contains only those which were in the target list.
 parseAndDesugar :: [FilePath] -> [FilePath] -> OutputFn -> IO ()
-parseAndDesugar inputFiles depsFiles outputFn = do
+parseAndDesugar = parseAndDesugar' False
+
+-- | Like parseAndDesugar, except that the Prelude modules will be included
+-- in the output.
+parseAndDesugarWithPrelude :: [FilePath] -> [FilePath] -> OutputFn -> IO ()
+parseAndDesugarWithPrelude = parseAndDesugar' True
+
+parseAndDesugar' :: Bool -> [FilePath] -> [FilePath] -> OutputFn -> IO ()
+parseAndDesugar' withPrelude inputFiles depsFiles outputFn = do
   inputFiles' <- parseAs TargetFile inputFiles
   depsFiles'  <- parseAs DepsFile depsFiles
-  let allFiles = (DepsFile "Prelude", P.prelude) : (inputFiles' ++ depsFiles')
+  let preludeInfo = if withPrelude then TargetFile else DepsFile
+  let allFiles = (preludeInfo "Prelude", P.prelude) : (inputFiles' ++ depsFiles')
 
   case P.parseModulesFromFiles fileInfoToString allFiles of
     Left err -> do

@@ -16,7 +16,7 @@ import qualified Paths_psc_pages as Paths
 
 app :: ([FilePath], FilePath) -> IO ()
 app (input, outputDir) =
-  parseAndDesugar input [] (outputAsHtml outputDir)
+  parseAndDesugarWithPrelude input [] (outputAsHtml outputDir)
 
 appHoogle :: String -> String -> FilePath -> FilePath -> IO ()
 appHoogle name vers inputDir outputFile = do
