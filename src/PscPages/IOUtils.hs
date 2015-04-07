@@ -17,5 +17,11 @@ writeLazyTextFile fp t = BL.writeFile fp (TLE.encodeUtf8 t)
 writeTextFile :: FilePath -> T.Text -> IO ()
 writeTextFile fp t = B.writeFile fp (TE.encodeUtf8 t)
 
+readLazyTextFile :: FilePath -> IO TL.Text
+readLazyTextFile fp = fmap TLE.decodeUtf8 (BL.readFile fp)
+
+readTextFile :: FilePath -> IO T.Text
+readTextFile fp = fmap TE.decodeUtf8 (B.readFile fp)
+
 mkdirp :: FilePath -> IO ()
 mkdirp = createDirectoryIfMissing True . takeDirectory

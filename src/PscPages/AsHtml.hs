@@ -16,11 +16,8 @@ import Data.Maybe (fromMaybe)
 import Data.List (nub, intercalate, sortBy)
 import Data.List.Split (splitOn)
 
-import qualified Data.ByteString as B
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Lazy.Encoding as TLE
 
 import Text.Blaze.Html ((!))
 import qualified Text.Blaze.Html as H
@@ -160,6 +157,7 @@ declAsHtml ctx (title, RenderedDeclaration{..}) = do
   case rdComments of
     Just cs -> cs
     Nothing -> return ()
+  for_ rdSourceSpan linkToSource
 
 codeAsHtml :: LinksContext -> RenderedCode -> H.Html
 codeAsHtml ctx = outputWith elemAsHtml
@@ -179,3 +177,12 @@ linkToConstructor (bookmarks, srcMn) ctor' mn contents
       Just destMn ->
         let uri = filePathFor destMn `relativeTo` filePathFor srcMn
         in  linkTo (uri ++ "#" ++ ctor') contents
+
+linkToSource :: P.SourceSpan -> H.Html
+linkToSource (P.SourceSpan name (P.SourcePos startLine _) (P.SourcePos endLine _)) =
+  linkTo (githubBaseUrl ++ "/tree/master/" ++ relativeToBase name ++ "#" ++ anchor)
+         (text "Source")
+  where
+  relativeToBase = intercalate "/" . dropWhile (/= "src") . splitOn "/"
+  githubBaseUrl = "https://github.com/purescript/purescript-maybe" -- TODO
+  anchor = "L" ++ show startLine ++ "-L" ++ show endLine

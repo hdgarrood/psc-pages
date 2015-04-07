@@ -23,14 +23,22 @@ library
                        bytestring,
                        text,
                        data-default,
-                       filepath,
                        split,
                        Glob,
                        transformers,
                        mtl,
+                       unordered-containers,
                        optparse-applicative,
+                       process,
+                       filepath,
                        directory,
-                       file-embed
+                       file-embed,
+                       aeson,
+                       http-types,
+                       http-client,
+                       wreq,
+                       lens,
+                       lens-aeson
   exposed-modules:     PscPages.RenderedCode
                      , PscPages.HtmlHelpers
                      , PscPages.Render
@@ -38,6 +46,7 @@ library
                      , PscPages.AsHoogle
                      , PscPages.Output
                      , PscPages.IOUtils
+                     , PscPages.PackageMeta
                      , PscPages.Program
                      , Paths_psc_pages
 

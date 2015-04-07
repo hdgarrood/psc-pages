@@ -45,21 +45,22 @@ getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTit
 getDeclarationTitle _                                        = Nothing
 
 data RenderedPackage = RenderedPackage
-  { rpName :: String
+  { rpName    :: String
   , rpVersion :: String
   , rpModules :: [RenderedModule]
   }
 
 data RenderedModule = RenderedModule
-  { rmName :: String
-  , rmComments :: Maybe H.Html
+  { rmName         :: String
+  , rmComments     :: Maybe H.Html
   , rmDeclarations :: [(String, RenderedDeclaration)]
   }
 
 data RenderedDeclaration = RenderedDeclaration
-  { rdComments :: Maybe H.Html
-  , rdCode     :: RenderedCode
-  , rdChildren :: [RenderedCode]
+  { rdComments   :: Maybe H.Html
+  , rdCode       :: RenderedCode
+  , rdChildren   :: [RenderedCode]
+  , rdSourceSpan :: Maybe P.SourceSpan
   }
 
 renderPackage :: String -> String -> [P.Module] -> RenderedPackage
@@ -75,7 +76,7 @@ renderModule m@(P.Module coms moduleName  _ exps) =
   go decl = (,) <$> getDeclarationTitle decl <*> renderDeclaration exps decl
 
 basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
-basicDeclaration code = Just (RenderedDeclaration Nothing code [])
+basicDeclaration code = Just (RenderedDeclaration Nothing code [] Nothing)
 
 renderDeclaration :: Maybe [P.DeclarationRef] -> P.Declaration -> Maybe RenderedDeclaration
 renderDeclaration _ (P.TypeDeclaration ident' ty) =
@@ -91,7 +92,7 @@ renderDeclaration _ (P.ExternDeclaration _ ident' _ ty) =
           <> sp <> syntax "::" <> sp
           <> renderType ty
 renderDeclaration exps (P.DataDeclaration dtype name args ctors) =
-  Just (RenderedDeclaration Nothing code children)
+  Just (RenderedDeclaration Nothing code children Nothing)
   where
   typeApp  = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
   exported = filter (P.isDctorExported name exps . fst) ctors
@@ -118,7 +119,7 @@ renderDeclaration _ (P.TypeSynonymDeclaration name args ty) =
           , renderType ty
           ]
 renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
-  Just (RenderedDeclaration Nothing code children)
+  Just (RenderedDeclaration Nothing code children Nothing)
   where
   code = mintersperse sp $
            [keywordClass]
@@ -173,10 +174,11 @@ renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _)
     in renderType supApp
 
   classApp = foldl P.TypeApp (P.TypeConstructor className) tys
-renderDeclaration exps (P.PositionedDeclaration _ com d) =
-  case renderDeclaration exps d of
-    Just rd -> Just (rd { rdComments = renderComments com })
-    other -> other
+renderDeclaration exps (P.PositionedDeclaration srcSpan com d) =
+  fmap (addComments . addSourceSpan) (renderDeclaration exps d)
+  where
+  addComments rd   = rd { rdComments   = renderComments com }
+  addSourceSpan rd = rd { rdSourceSpan = Just srcSpan }
 renderDeclaration _ _ = Nothing
 
 renderComments :: [P.Comment] -> Maybe H.Html
