@@ -5,13 +5,12 @@
 -- | Data types and functions for obtaining and operating on package metadata
 -- descriptions, from bower.json for example.
 
--- TODO Check that the correct git tag is checked out, by shelling out to git?
-
 module PscPages.PackageMeta where
 
 import Prelude hiding (userError)
 
 import Data.Maybe
+import Data.Char (isSpace)
 import Data.String (fromString)
 import Data.List (stripPrefix, isSuffixOf, intercalate)
 import Data.List.Split (splitOn)
@@ -84,6 +83,7 @@ getPackageMeta =
         vcat
           [ para "Internal error: this is probably a bug. Please report it:"
           , indented (para "https://github.com/purescript/pursuit/issues/new")
+          , spacer
           , para "Details:"
           , successivelyIndented (displayInternalError e)
           ]
@@ -110,7 +110,8 @@ getPackageMeta =
       [ para (concat
         ["The following ", packages, " ", were, " not resolved to a version:"])
       ] ++ (map (indented . para) names) ++
-      [ para (concat
+      [ spacer
+      , para (concat
         ["Links to types in ", anyOfThese, " ", packages, " will not work. In "
         , "order to make links work, edit your bower.json to specify a version"
         , " or a version range for ", these, " ", packages, ", and rerun "
@@ -133,6 +134,9 @@ successivelyIndented (x:xs) =
 vcat :: [Boxes.Box] -> Boxes.Box
 vcat = Boxes.vcat Boxes.left
 
+spacer :: Boxes.Box
+spacer = Boxes.emptyBox 1 1
+
 -- | An error which meant that it was not possible to retrieve metadata for a
 -- package.
 data PackageError
@@ -146,8 +150,8 @@ data UserError
   = BowerJsonNotFound
   | CouldntParseBowerJson String
   | BowerJsonNameMissing
-  | BowerJsonVersionMissing
-  | BowerJsonInvalidVersion
+  | TagMustBeCheckedOut
+  | AmbiguousVersions [Version]
   | NotOnGithub
   | NotOnBower PackageName
   deriving (Show)
@@ -170,19 +174,29 @@ displayUserError e = case e of
       [ successivelyIndented ["In bower.json:", "the \"name\" key was not found."]
       , para "Please give your package a name first."
       ]
-  BowerJsonVersionMissing ->
-    vcat
-      [ successivelyIndented ["In bower.json:", "the \"version\" key was not found."]
-      , para "Please add the current version to your bower.json file."
-      ]
-  BowerJsonInvalidVersion ->
-    vcat
-      [ successivelyIndented ["In bower.json:", "the \"version\" key could not be parsed."]
-      , para (concat
-        [ "Please ensure the version in bower.json is formatted correctly. "
-        , "The expected format is MAJOR.MINOR.PATCH, for example, \"1.5.3\"."
-        ])
-      ]
+  TagMustBeCheckedOut ->
+      vcat
+        [ para (concat
+            [ "psc-pages requires a tagged version to be checked out in order "
+            , "to build documentation, and no suitable tag was found. Please "
+            , "check out a previously tagged version, or tag a new version."
+            ])
+        , spacer
+        , para "Note: tagged versions must be in one of the following forms:"
+        , indented (para "* v{MAJOR}.{MINOR}.{PATCH} (example: \"v1.6.2\")")
+        , indented (para "* {MAJOR}.{MINOR}.{PATCH} (example: \"1.6.2\")")
+        ]
+  AmbiguousVersions vs ->
+    vcat $
+      [ para (concat
+          [ "The currently checked out commit seems to have been tagged with "
+          , "more than 1 version, and I don't know which one should be used. "
+          , "Please either delete some of the tags, or use a different commit "
+          , "to tag the desired verson with."
+          ])
+      , spacer
+      , para "Tags for the currently checked out commit:"
+      ] ++ map (indented . para . ("* " ++) . showVersion) vs
   NotOnGithub ->
     para (concat
       [ "The entry for this package in the Bower registry does not point to a "
@@ -272,13 +286,9 @@ getPackageMeta' = do
                   >>= flip catchLeft
                         (userError . CouldntParseBowerJson)
 
-  pkgMetaName <- PackageName <$> takeKeyOr BowerJsonNameMissing bowerJson "name"
-  versionStr <- takeKeyOr BowerJsonVersionMissing bowerJson "version"
-  pkgMetaVersion <- maybe (userError BowerJsonInvalidVersion)
-                          return
-                          (parseVersion' versionStr)
-
-  pkgMetaGithub <- getBowerInfo pkgMetaName
+  pkgMetaName         <- PackageName <$> takeKeyOr BowerJsonNameMissing bowerJson "name"
+  pkgMetaVersion      <- getVersionFromGitTag
+  pkgMetaGithub       <- getBowerInfo pkgMetaName
   pkgMetaDependencies <- M.fromList <$> getBowerDepsVersions
 
   return PackageMeta{..}
@@ -297,6 +307,22 @@ parseJsonFile fp = do
 (<#>) = flip fmap
 
 infixl 1 <#>
+
+getVersionFromGitTag :: GetMetaM Version
+getVersionFromGitTag = do
+  out <- readProcess' "git" ["tag", "--list", "--points-at", "HEAD"] ""
+  let vs = map clean (lines out)
+  case mapMaybe parseVersion' vs of
+    []  -> userError TagMustBeCheckedOut
+    [x] -> return x
+    xs  -> userError (AmbiguousVersions xs)
+  where
+  clean =
+    trimWhitespace >>> dropPrefix "v"
+  trimWhitespace =
+    dropWhile isSpace >>> reverse >>> dropWhile isSpace >>> reverse
+  dropPrefix prefix str =
+    fromMaybe str (stripPrefix prefix str)
 
 getBowerInfo :: PackageName -> GetMetaM (GithubUser, GithubRepo)
 getBowerInfo pkgName = do
