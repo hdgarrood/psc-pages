@@ -38,7 +38,8 @@ library
                        http-client,
                        wreq,
                        lens,
-                       lens-aeson
+                       lens-aeson,
+                       boxes
   exposed-modules:     PscPages.RenderedCode
                      , PscPages.HtmlHelpers
                      , PscPages.Render

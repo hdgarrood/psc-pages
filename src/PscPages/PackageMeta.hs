@@ -25,6 +25,8 @@ import qualified Data.Text as T
 import qualified Data.Aeson as A
 import Data.Aeson.Lens (key, _String)
 
+import qualified Text.PrettyPrint.Boxes as Boxes
+
 import Control.Applicative
 import Control.Category ((>>>))
 import Control.Lens ((^?), to)
@@ -55,6 +57,8 @@ newtype PackageName = PackageName String deriving (Show, Eq, Ord)
 newtype GithubUser  = GithubUser String  deriving (Show, Eq, Ord)
 newtype GithubRepo  = GithubRepo String  deriving (Show, Eq, Ord)
 
+-- | Attempt to retrieve package metadata from the current directory.
+-- Calls exitFailure if no package metadata could be retrieved.
 getPackageMeta :: IO PackageMeta
 getPackageMeta =
   runGetMetaM getPackageMeta'
@@ -62,30 +66,74 @@ getPackageMeta =
                handleWarnings
   where
   printError err = do
-    case err of
-      UserError e -> do
-        putStrLn "Error:"
-        putStrLn (displayUserError e)
+    Boxes.printBox $ case err of
+      UserError e ->
+        vcat
+          [ para (concat
+            [ "There is a problem with your package, which meant that "
+            , "documentation could not be generated."
+            ])
+          , para "Details:"
+          , indented (displayUserError e)
+          ]
       InternalError e -> do
-        putStrLn "Internal error; this is probably a bug:"
-        mapM_ putStrLn (displayInternalError e)
+        vcat
+          [ para "Internal error: this is probably a bug. Please report it:"
+          , indented (para "https://github.com/purescript/pursuit/issues/new")
+          , successivelyIndented (displayInternalError e)
+          ]
       OtherError e -> do
-        putStrLn "Error:"
-        putStrLn (displayOtherError e)
+        vcat
+          [ para "An error occurred."
+          , para "Details:"
+          , indented (para (displayOtherError e))
+          ]
 
   handleWarnings (x, warns) = do
-    when (not (null warns)) $ do
-      let names = map getPackageName warns
-      putStrLn "The following packages were not resolved to a version:"
-      mapM_ (putStrLn . ("  " ++)) names
-      putStrLn "Links to types in any of these packages will not work. In order"
-      putStrLn "to make links work, edit your bower.json to specify a version or"
-      putStrLn "version range for these packages."
-
+    let names = map getPackageName warns
+    case length warns of
+      0 -> return ()
+      1 -> pluraliseMsg "package" "was" "this" "this" names
+      _ -> pluraliseMsg "packages" "were" "any of these" "these" names
     return x
 
   getPackageName :: PackageWarning -> String
   getPackageName (ResolutionNotVersion (PackageName n)) = n
+
+  pluraliseMsg packages were anyOfThese these names =
+    Boxes.printBox $ vcat $
+      [ para (concat
+        ["The following ", packages, " ", were, " not resolved to a version:"])
+      ] ++ (map (indented . para) names) ++
+      [ para (concat
+        ["Links to types in ", anyOfThese, " ", packages, " will not work. In "
+        , "order to make links work, edit your bower.json to specify a version"
+        , " or a version range for ", these, " ", packages, ", and rerun "
+        , "`bower install`."
+        ])
+      ]
+
+para :: String -> Boxes.Box
+para = Boxes.para Boxes.left 79
+
+indented :: Boxes.Box -> Boxes.Box
+indented b = Boxes.hcat Boxes.left [Boxes.emptyBox 1 2, b]
+
+successivelyIndented :: [String] -> Boxes.Box
+successivelyIndented [] =
+  Boxes.nullBox
+successivelyIndented (x:xs) =
+  Boxes.vcat Boxes.left [para x, indented (successivelyIndented xs)]
+
+vcat :: [Boxes.Box] -> Boxes.Box
+vcat = Boxes.vcat Boxes.left
+
+outputBaseDirectory :: PackageMeta -> FilePath
+outputBaseDirectory pkgMeta =
+  concat [ name, "/", version ]
+  where
+  PackageName name = pkgMetaName pkgMeta
+  version = showVersion (pkgMetaVersion pkgMeta)
 
 
 -- | An error which meant that it was not possible to retrieve metadata for a
@@ -107,36 +155,50 @@ data UserError
   | NotOnBower PackageName
   deriving (Show)
 
-displayUserError :: UserError -> String
+displayUserError :: UserError -> Boxes.Box
 displayUserError e = case e of
   BowerJsonNotFound ->
-    "The bower.json file was not found. Please create one, or run `pulp init`."
+    para (concat
+      [ "The bower.json file was not found. Please create one, or run "
+      , "`pulp init`."
+      ])
   CouldntParseBowerJson err ->
-    "The bower.json file could not be parsed as JSON: " ++ err
+    vcat
+      [ successivelyIndented
+        ["The bower.json file could not be parsed as JSON:", "aeson reported: " ++ show err]
+      , para "Please ensure that your bower.json file is valid JSON."
+      ]
   BowerJsonNameMissing ->
-    unlines
-      [ "In bower.json: the \"name\" key was not found."
-      , "Please give your package a name first."
+    vcat
+      [ successivelyIndented ["In bower.json:", "the \"name\" key was not found."]
+      , para "Please give your package a name first."
       ]
   BowerJsonVersionMissing ->
-    unlines
-      [ "In bower.json: the \"version\" key was not found."
-      , "Please add the current version to your bower.json file."
+    vcat
+      [ successivelyIndented ["In bower.json:", "the \"version\" key was not found."]
+      , para "Please add the current version to your bower.json file."
       ]
   BowerJsonInvalidVersion ->
-    "In bower.json: the \"version\" key could not be parsed."
+    vcat
+      [ successivelyIndented ["In bower.json:", "the \"version\" key could not be parsed."]
+      , para (concat
+        [ "Please ensure the version in bower.json is formatted correctly. "
+        , "The expected format is MAJOR.MINOR.PATCH, for example, \"1.5.3\"."
+        ])
+      ]
   NotOnGithub ->
-    unlines
-      [ "The entry for this package in the Bower registry does not point to a GitHub repository."
-      , "Currently, pursuit does not support packages which are not hosted on GitHub."
-      , "If you would prefer not to host your package on GitHub, please open an issue:"
-      , "  https://github.com/purescript/pursuit/issues/new"
-      ]
+    para (concat
+      [ "The entry for this package in the Bower registry does not point to a "
+      , "GitHub repository. Currently, pursuit does not support packages which "
+      , "are not hosted on GitHub. If you would prefer not to host your "
+      , "package on GitHub, please open an issue: "
+      , "https://github.com/purescript/pursuit/issues/new"
+      ])
   NotOnBower (PackageName name) ->
-    unlines
-      [ "Your package (" ++ name ++ ") does not yet appear to be on the Bower registry."
-      , "Please add it before continuing."
-      ]
+    para (concat
+      [ "Your package (" ++ name ++ ") does not yet appear to be on the Bower "
+      , "registry. Please add it before continuing."
+      ])
 
 -- | An error that probably indicates a bug in this module.
 data InternalError
@@ -229,6 +291,8 @@ parseJsonFile fp = do
 (<#>) :: Functor f => f a -> (a -> b) -> f b
 (<#>) = flip fmap
 
+infixl 1 <#>
+
 getBowerInfo :: PackageName -> GetMetaM (GithubUser, GithubRepo)
 getBowerInfo pkgName = do
   r' <- liftIO (catch (Right <$> get (bowerPackageUrl pkgName))
@@ -247,9 +311,10 @@ getBowerInfo pkgName = do
   handleError e = otherError (HttpExceptionThrown e)
 
   getUrl r =
-    (TJ.parse (fromMaybe "" (r ^? responseBody))
+    TJ.parse (fromMaybe "" (r ^? responseBody))
       >>= TJ.takeKey "url"
-      >>= TJ.asString) <#> T.unpack
+      >>= TJ.asString
+      <#> T.unpack
 
 bowerDomainName :: String
 bowerDomainName = "bower.herokuapp.com"
