@@ -3,7 +3,7 @@
 -- | A utility module for dealing with reading JSON, and generating good error
 -- messages in the case of JSON with a bad schema.
 
-module PscPages.TracedJson where
+module PscPages.Utils.TracedJson where
 
 import Control.Applicative
 import Control.Monad

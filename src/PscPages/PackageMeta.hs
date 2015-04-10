@@ -45,7 +45,7 @@ import Network.HTTP.Client (HttpException(StatusCodeException))
 import Network.HTTP.Types (notFound404)
 
 import PscPages.Types
-import qualified PscPages.TracedJson as TJ
+import qualified PscPages.Utils.TracedJson as TJ
 
 packageIdentifier :: PackageMeta -> String
 packageIdentifier pkgMeta =

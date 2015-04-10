@@ -1,4 +1,4 @@
-module PscPages.HtmlHelpers where
+module PscPages.Utils.HtmlHelpers where
 
 import Data.String (fromString)
 

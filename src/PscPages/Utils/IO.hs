@@ -1,4 +1,4 @@
-module PscPages.IOUtils where
+module PscPages.Utils.IO where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL

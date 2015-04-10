@@ -21,7 +21,7 @@ import PscPages.AsHtml
 import PscPages.AsHoogle
 import PscPages.Output
 import PscPages.PackageMeta
-import PscPages.IOUtils
+import PscPages.Utils.IO
 import qualified Paths_psc_pages as Paths
 
 app :: FilePath -> IO ()

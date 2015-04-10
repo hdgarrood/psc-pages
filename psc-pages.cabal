@@ -42,16 +42,16 @@ library
                        lens-aeson,
                        boxes
   exposed-modules:     PscPages.RenderedCode
-                     , PscPages.HtmlHelpers
                      , PscPages.Render
                      , PscPages.AsHtml
                      , PscPages.AsHoogle
                      , PscPages.Output
-                     , PscPages.IOUtils
                      , PscPages.PackageMeta
                      , PscPages.Program
                      , PscPages.Types
-                     , PscPages.TracedJson
+                     , PscPages.Utils.IO
+                     , PscPages.Utils.TracedJson
+                     , PscPages.Utils.HtmlHelpers
                      , Paths_psc_pages
 
 executable psc-pages

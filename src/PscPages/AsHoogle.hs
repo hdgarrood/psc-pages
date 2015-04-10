@@ -21,8 +21,8 @@ import System.FilePath ((</>))
 
 import PscPages.Render
 import PscPages.RenderedCode
-import PscPages.IOUtils
 import PscPages.Types
+import PscPages.Utils.IO
 
 outputHoogle :: OutputFn
 outputHoogle outputDir pkgMeta _ bookmarks modules =

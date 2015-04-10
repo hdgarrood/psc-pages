@@ -35,11 +35,11 @@ import System.FilePath ((</>))
 import Data.FileEmbed
 
 import PscPages.Types
-import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
 import PscPages.PackageMeta hiding (para)
-import PscPages.IOUtils
+import PscPages.Utils.IO
+import PscPages.Utils.HtmlHelpers
 
 data LinksContext = LinksContext
   { ctxPackageMeta      :: PackageMeta
