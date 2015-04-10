@@ -50,8 +50,19 @@ data LinksContext = LinksContext
   deriving (Show)
 
 data DocLink
+  -- | A link to a declaration in the same module; in this case, only the title
+  -- is needed to generate the link.
   = SameModule String
+
+  -- | A link to a declaration in a different module, but still in the current
+  -- package; we need to store the current module, the other declaration's
+  -- module, and the title.
   | LocalModule P.ModuleName P.ModuleName String
+
+  -- | A link to a declaration in a different package. We store: current module
+  -- name, name of the other package, version of the other package, name of
+  -- the module in the other package that the declaration is in, and
+  -- declaration title.
   | DepsModule P.ModuleName PackageName Version P.ModuleName String
 
 outputHtml :: OutputFn
