@@ -38,6 +38,7 @@ import PscPages.Types
 import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
+import PscPages.PackageMeta hiding (para)
 import PscPages.IOUtils
 
 data LinksContext = LinksContext
@@ -63,16 +64,17 @@ outputHtml outputDir pkgMeta deps bookmarks modules = do
   mkParentDir bootstrapFile
   writeTextFile bootstrapFile bootstrap
 
+  let pkgId = packageIdentifier pkgMeta
   let contentsFile = outputDir </> "index.html"
-  writeLazyTextFile contentsFile (H.renderHtml $ contentsPageHtml modules)
+  writeLazyTextFile contentsFile (H.renderHtml $ contentsPageHtml pkgId modules)
 
   let indexFile = outputDir </> "index/index.html"
   mkParentDir indexFile
-  writeLazyTextFile indexFile (H.renderHtml indexPageHtml)
+  writeLazyTextFile indexFile (H.renderHtml (indexPageHtml pkgId))
 
   for_ ['a'..'z'] $ \c -> do
     let letterFile = outputDir </> ("index/" ++ c : ".html")
-    writeLazyTextFile letterFile (H.renderHtml $ letterPageHtml c (takeLocals bookmarks))
+    writeLazyTextFile letterFile (H.renderHtml $ letterPageHtml pkgId c (takeLocals bookmarks))
 
   for_ modules (renderModule' outputDir pkgMeta deps bookmarks)
 
@@ -89,23 +91,23 @@ renderModule' outputDir pkgMeta deps bookmarks m@(P.Module _ moduleName _ _) = d
   mkParentDir filename
   writeLazyTextFile filename html
 
-contentsPageHtml :: [P.Module] -> H.Html
-contentsPageHtml ms = do
-  template "index.html" "Contents" $ do
+contentsPageHtml :: String -> [P.Module] -> H.Html
+contentsPageHtml pkgId ms = do
+  template pkgId "index.html" "Contents" $ do
     H.h2 $ text "Modules"
     H.ul $ for_ (sortBy (comparing $ \(P.Module _ moduleName _ _) -> moduleName) ms) $ \(P.Module _ moduleName _ _) -> H.li $
       H.a ! A.href (fromString (filePathFor moduleName `relativeTo` "index.html")) $ text (show moduleName)
 
-indexPageHtml :: H.Html
-indexPageHtml = do
-  template "index/index.html" "Index" $ do
+indexPageHtml :: String -> H.Html
+indexPageHtml pkgId = do
+  template pkgId "index/index.html" "Index" $ do
     H.ul $ for_ ['a'..'z'] $ \c ->
       H.li $ H.a ! A.href (fromString (c : ".html")) $ text [toUpper c]
 
-letterPageHtml :: Char -> [(P.ModuleName, String)] -> H.Html
-letterPageHtml c bs = do
+letterPageHtml :: String -> Char -> [(P.ModuleName, String)] -> H.Html
+letterPageHtml pkgId c bs = do
   let filename = "index/" ++ c : ".html"
-  template filename [toUpper c] $ do
+  template pkgId filename [toUpper c] $ do
     H.ul $ for_ (sortBy (comparing snd) . nub . filter matches $ bs) $ \(mn, s) -> H.li $ H.code $ do
       H.a ! A.href (fromString ((filePathFor mn `relativeTo` filename) ++ "#" ++ s)) $ text s
       sp *> text ("(" ++ show mn ++ ")")
@@ -113,8 +115,8 @@ letterPageHtml c bs = do
   matches (_, (c':_)) = toUpper c == toUpper c'
   matches _ = False
 
-template :: FilePath -> String -> H.Html -> H.Html
-template curFile title body = do
+template :: String -> FilePath -> String -> H.Html -> H.Html
+template pkgId curFile title body = do
   H.docType
   H.html $ do
     H.head $ do
@@ -125,7 +127,7 @@ template curFile title body = do
       H.div ! A.class_ "navbar navbar-default" $ do
         H.div ! A.class_ "container" $ do
           H.div ! A.class_ "navbar-header" $ do
-            H.a ! A.class_ "navbar-brand" $ text "Core Libraries"
+            H.a ! A.class_ "navbar-brand" $ text pkgId
           H.ul ! A.class_ "nav navbar-nav" $ do
             H.li $ H.a ! A.href (fromString ("index.html" `relativeTo` curFile)) $ text "Contents"
             H.li $ H.a ! A.href (fromString ("index/index.html" `relativeTo` curFile)) $ text "Index"
@@ -159,7 +161,7 @@ relativeToOtherPackage (PackageName name) (showVersion -> vers) to from =
 
 moduleToHtml :: PackageMeta -> M.Map P.ModuleName PackageName -> Bookmarks -> P.Module -> H.Html
 moduleToHtml pkgMeta deps bookmarks m =
-  template (filePathFor moduleName) (show moduleName) $ do
+  template (packageIdentifier pkgMeta) (filePathFor moduleName) (show moduleName) $ do
     for_ (rmComments rm) id
     for_ (rmDeclarations rm) (declAsHtml linksContext)
   where

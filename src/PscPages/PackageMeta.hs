@@ -47,6 +47,20 @@ import Network.HTTP.Types (notFound404)
 import PscPages.Types
 import qualified PscPages.TracedJson as TJ
 
+packageIdentifier :: PackageMeta -> String
+packageIdentifier pkgMeta =
+  concat [name, "-", version]
+  where
+  name = runPackageName (pkgMetaName pkgMeta)
+  version = showVersion (pkgMetaVersion pkgMeta)
+
+outputBaseDirectory :: PackageMeta -> FilePath
+outputBaseDirectory pkgMeta =
+  concat [ name, "/", version ]
+  where
+  name = runPackageName (pkgMetaName pkgMeta)
+  version = showVersion (pkgMetaVersion pkgMeta)
+
 -- | Attempt to retrieve package metadata from the current directory.
 -- Calls exitFailure if no package metadata could be retrieved.
 getPackageMeta :: IO PackageMeta
@@ -117,13 +131,6 @@ successivelyIndented (x:xs) =
 
 vcat :: [Boxes.Box] -> Boxes.Box
 vcat = Boxes.vcat Boxes.left
-
-outputBaseDirectory :: PackageMeta -> FilePath
-outputBaseDirectory pkgMeta =
-  concat [ name, "/", version ]
-  where
-  name = runPackageName (pkgMetaName pkgMeta)
-  version = showVersion (pkgMetaVersion pkgMeta)
 
 -- | An error which meant that it was not possible to retrieve metadata for a
 -- package.
