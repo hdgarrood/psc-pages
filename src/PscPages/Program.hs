@@ -26,10 +26,9 @@ import qualified Paths_psc_pages as Paths
 
 app :: FilePath -> IO ()
 app outputDir = do
-  inputFiles <- Glob.glob "src/**/*.purs"
-  currentDir <- getCurrentDirectory
-  depsFilesAbsolute <- Glob.glob "bower_components/*/src/**/*.purs"
-  let depsFiles = mapMaybe (withPackageName <=< stripPrefix (currentDir ++ "/")) depsFilesAbsolute
+  inputFiles <- globRelative "src/**/*.purs"
+  depsFiles' <- globRelative "bower_components/*/src/**/*.purs"
+  let depsFiles = mapMaybe withPackageName depsFiles'
 
   pkgMeta <- getPackageMeta
 
@@ -55,6 +54,12 @@ getPackageName fp = do
 headMay :: [a] -> Maybe a
 headMay (x:_) = Just x
 headMay [] = Nothing
+
+globRelative :: String -> IO [FilePath]
+globRelative pat = do
+  filesAbsolute <- Glob.glob pat
+  currentDir <- getCurrentDirectory
+  return (mapMaybe (stripPrefix (currentDir ++ "/")) filesAbsolute)
 
 outputDirectoryP :: Parser FilePath
 outputDirectoryP = strOption $
