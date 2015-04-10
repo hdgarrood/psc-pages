@@ -13,7 +13,7 @@ import Prelude hiding (userError)
 
 import Data.Maybe
 import Data.String (fromString)
-import Data.List (stripPrefix, isSuffixOf)
+import Data.List (stripPrefix, isSuffixOf, intercalate)
 import Data.List.Split (splitOn)
 import Data.Version
 import Text.ParserCombinators.ReadP (readP_to_S)
@@ -84,13 +84,14 @@ getPackageMeta =
         vcat
           [ para "Internal error: this is probably a bug. Please report it:"
           , indented (para "https://github.com/purescript/pursuit/issues/new")
+          , para "Details:"
           , successivelyIndented (displayInternalError e)
           ]
       OtherError e -> do
         vcat
           [ para "An error occurred."
           , para "Details:"
-          , indented (para (displayOtherError e))
+          , indented (displayOtherError e)
           ]
 
   handleWarnings (x, warns) = do
@@ -226,8 +227,16 @@ data OtherError
   | ProcessFailed String [String] IOException
   deriving (Show)
 
-displayOtherError :: OtherError -> String
-displayOtherError = undefined
+displayOtherError :: OtherError -> Boxes.Box
+displayOtherError e = case e of
+  HttpExceptionThrown exc ->
+    successivelyIndented
+      [ "HTTP exception:", show exc ]
+  ProcessFailed prog args exc ->
+    successivelyIndented
+      [ "While running `" ++ prog ++ " " ++ intercalate " " args ++ "`:"
+      , show exc
+      ]
 
 data PackageWarning
   = ResolutionNotVersion PackageName
