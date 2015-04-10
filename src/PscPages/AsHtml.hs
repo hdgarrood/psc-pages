@@ -14,7 +14,6 @@ import Data.Ord (comparing)
 import Data.Char (toUpper)
 import Data.String (fromString)
 import Data.Foldable (for_)
-import Data.Maybe (fromMaybe)
 import Data.List (nub, intercalate, sortBy)
 import Data.List.Split (splitOn)
 import Data.Version
@@ -39,8 +38,6 @@ import PscPages.Types
 import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
-import PscPages.Output
-import PscPages.PackageMeta hiding (para)
 import PscPages.IOUtils
 
 data LinksContext = LinksContext
@@ -50,6 +47,11 @@ data LinksContext = LinksContext
   , ctxSourceModuleName :: P.ModuleName
   }
   deriving (Show)
+
+data DocLink
+  = SameModule String
+  | LocalModule P.ModuleName P.ModuleName String
+  | DepsModule P.ModuleName PackageName Version P.ModuleName String
 
 outputHtml :: OutputFn
 outputHtml outputDir pkgMeta deps bookmarks modules = do
@@ -188,20 +190,33 @@ codeAsHtml ctx = outputWith elemAsHtml
   elemAsHtml (Keyword x) = withClass "keyword" (text x)
   elemAsHtml Space       = text " "
 
-linkToConstructor :: LinksContext -> String -> ContainingModule -> H.Html -> H.Html
-linkToConstructor LinksContext{..} ctor' containMn contents =
-  fromMaybe contents $ do
-    let bookmark = (fromContainingModule ctxSourceModuleName containMn, ctor')
-    guard (bookmark `elem` ignorePackages ctxBookmarks)
+getLink :: LinksContext -> String -> ContainingModule -> Maybe DocLink
+getLink LinksContext{..} ctor' containingMn = do
+  let bookmark = (fromContainingModule ctxSourceModuleName containingMn, ctor')
+  guard (bookmark `elem` ignorePackages ctxBookmarks)
 
-    case containMn of
-      ThisModule -> return (linkTo ('#' : ctor') contents)
-      OtherModule destMn -> do
-        pkgName <- M.lookup destMn ctxDepModules
-        pkgVersion <- M.lookup pkgName (pkgMetaDependencies ctxPackageMeta)
-        let relativeTo' = relativeToOtherPackage pkgName pkgVersion
-            uri = filePathFor destMn `relativeTo'` filePathFor ctxSourceModuleName
-        return (linkTo (uri ++ "#" ++ ctor') contents)
+  case containingMn of
+    ThisModule -> return (SameModule ctor')
+    OtherModule destMn ->
+      case M.lookup destMn ctxDepModules of
+        Nothing -> return (LocalModule ctxSourceModuleName destMn ctor')
+        Just pkgName -> do
+          pkgVersion <- M.lookup pkgName (pkgMetaDependencies ctxPackageMeta)
+          return (DepsModule ctxSourceModuleName pkgName pkgVersion destMn ctor')
+
+renderLink :: DocLink -> H.Html -> H.Html
+renderLink (SameModule x) = linkTo ('#' : x)
+renderLink (LocalModule srcMn destMn x) =
+  let uri = filePathFor destMn `relativeTo` filePathFor srcMn
+  in  linkTo (uri ++ "#" ++ x)
+renderLink (DepsModule srcMn pkgName pkgVersion destMn x) =
+  let relativeTo' = relativeToOtherPackage pkgName pkgVersion
+      uri = filePathFor destMn `relativeTo'` filePathFor srcMn
+  in  linkTo (uri ++ "#" ++ x)
+
+linkToConstructor :: LinksContext -> String -> ContainingModule -> H.Html -> H.Html
+linkToConstructor ctx ctor' containMn =
+  maybe id renderLink (getLink ctx ctor' containMn)
 
 linkToSource :: LinksContext -> P.SourceSpan -> H.Html
 linkToSource ctx (P.SourceSpan name start end) =
