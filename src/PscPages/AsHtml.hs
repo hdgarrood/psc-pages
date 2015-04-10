@@ -221,7 +221,7 @@ linkToConstructor ctx ctor' containMn =
 linkToSource :: LinksContext -> P.SourceSpan -> H.Html
 linkToSource ctx (P.SourceSpan name start end) =
   linkTo (concat
-            [githubBaseUrl, "/tree/master/", relativeToBase name, "#", anchor])
+            [githubBaseUrl, "/tree/master/", relativeToBase name, "#", fragment])
          (text "Source")
   where
   (P.SourcePos startLine _) = start
@@ -230,4 +230,4 @@ linkToSource ctx (P.SourceSpan name start end) =
 
   relativeToBase = intercalate "/" . dropWhile (/= "src") . splitOn "/"
   githubBaseUrl = concat ["https://github.com/", user, "/", repo]
-  anchor = "L" ++ show startLine ++ "-L" ++ show endLine
+  fragment = "L" ++ show startLine ++ "-L" ++ show endLine
