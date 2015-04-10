@@ -191,11 +191,11 @@ codeAsHtml ctx = outputWith elemAsHtml
   elemAsHtml Space       = text " "
 
 getLink :: LinksContext -> String -> ContainingModule -> Maybe DocLink
-getLink LinksContext{..} ctor' containingMn = do
-  let bookmark = (fromContainingModule ctxSourceModuleName containingMn, ctor')
+getLink LinksContext{..} ctor' containingMod = do
+  let bookmark = (fromContainingModule ctxSourceModuleName containingMod, ctor')
   guard (bookmark `elem` ignorePackages ctxBookmarks)
 
-  case containingMn of
+  case containingMod of
     ThisModule -> return (SameModule ctor')
     OtherModule destMn ->
       case M.lookup destMn ctxDepModules of
