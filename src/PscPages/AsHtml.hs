@@ -130,17 +130,28 @@ template curFile title body = do
         H.h1 $ text title
         body
 
+-- | if `to` and `from` are both files in the current package, generate a
+-- FilePath for `to` relative to `from`.
 relativeTo :: FilePath -> FilePath -> FilePath
 relativeTo to from = go (splitOn "/" to) (splitOn "/" from)
   where
   go (x : xs) (y : ys) | x == y = go xs ys
   go xs ys = intercalate "/" $ replicate (length ys - 1) ".." ++ xs
 
+-- | Generate a FilePath for module documentation for a module in the current
+-- package.
 filePathFor :: P.ModuleName -> FilePath
 filePathFor (P.ModuleName parts) = go parts
   where
   go [] = "index.html"
   go (x : xs) = show x </> go xs
+
+-- | Like `relativeTo`, but in the case where `to` is in another package.
+relativeToOtherPackage :: PackageName -> Version -> FilePath -> FilePath -> FilePath
+relativeToOtherPackage (PackageName name) (showVersion -> vers) to from =
+  intercalate "/" (dots ++ [name, vers] ++ splitOn "/" to)
+  where
+  dots = replicate (length from - 1) ".."
 
 moduleToHtml :: PackageMeta -> M.Map P.ModuleName PackageName -> [(P.ModuleName, String)] -> P.Module -> H.Html
 moduleToHtml pkgMeta deps bookmarks m =
@@ -177,13 +188,20 @@ codeAsHtml ctx = outputWith elemAsHtml
 
 -- TODO: fix.
 linkToConstructor :: LinksContext -> String -> Maybe P.ModuleName -> H.Html -> H.Html
-linkToConstructor (depsVersions, modDeps, bookmarks, srcMn) ctor' mn contents
+linkToConstructor (pkgMeta, modDeps, bookmarks, srcMn) ctor' mn contents
   | (fromMaybe srcMn mn, ctor') `notElem` bookmarks = contents
   | otherwise = case mn of
       Nothing -> linkTo ('#' : ctor') contents
       Just destMn ->
-        let uri = filePathFor destMn `relativeTo` filePathFor srcMn
-        in  linkTo (uri ++ "#" ++ ctor') contents
+        case M.lookup destMn modDeps of
+          Nothing -> contents
+          Just pkgName ->
+            case M.lookup pkgName (pkgMetaDependencies pkgMeta) of
+              Nothing -> contents
+              Just pkgVersion ->
+                let relativeTo' = relativeToOtherPackage pkgName pkgVersion
+                    uri = filePathFor destMn `relativeTo'` filePathFor srcMn
+                in  linkTo (uri ++ "#" ++ ctor') contents
 
 linkToSource :: LinksContext -> P.SourceSpan -> H.Html
 linkToSource ctx (P.SourceSpan name start end) =
