@@ -62,9 +62,8 @@ globRelative pat = do
   return (mapMaybe (stripPrefix (currentDir ++ "/")) filesAbsolute)
 
 outputDirectoryP :: Parser FilePath
-outputDirectoryP = strOption $
-     short 'o'
-  <> long "output"
+outputDirectoryP = strArgument $
+     metavar "OUTPUT_DIR"
   <> help "The output directory for HTML files"
 
 main :: IO ()
