@@ -2,6 +2,7 @@
 
 module PscPages.RenderedCode
  ( RenderedCodeElement(..)
+ , ContainingModule(..)
  , RenderedCode
  , outputWith
  , sp
@@ -27,10 +28,15 @@ import qualified Language.PureScript as P
 data RenderedCodeElement
   = Syntax String
   | Ident String
-  | Ctor String (Maybe P.ModuleName) -- ^ Constructor text and optional containing module name.
+  | Ctor String ContainingModule
   | Kind String
   | Keyword String
   | Space
+  deriving (Show, Eq, Ord)
+
+data ContainingModule
+  = ThisModule
+  | OtherModule P.ModuleName
   deriving (Show, Eq, Ord)
 
 newtype RenderedCode
@@ -49,7 +55,7 @@ syntax x = RC [Syntax x]
 ident :: String -> RenderedCode
 ident x = RC [Ident x]
 
-ctor :: String -> Maybe P.ModuleName -> RenderedCode
+ctor :: String -> ContainingModule -> RenderedCode
 ctor x m = RC [Ctor x m]
 
 kind :: String -> RenderedCode

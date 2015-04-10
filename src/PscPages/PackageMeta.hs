@@ -44,25 +44,8 @@ import Network.Wreq (get, responseBody)
 import Network.HTTP.Client (HttpException(StatusCodeException))
 import Network.HTTP.Types (notFound404)
 
+import PscPages.Types
 import qualified PscPages.TracedJson as TJ
-
-data PackageMeta = PackageMeta
-  { pkgMetaName         :: PackageName
-  , pkgMetaVersion      :: Version
-  , pkgMetaDependencies :: M.Map PackageName Version
-  , pkgMetaGithub       :: (GithubUser, GithubRepo)
-  }
-  deriving (Show, Eq, Ord)
-
-newtype PackageName
-  = PackageName { runPackageName :: String }
-  deriving (Show, Eq, Ord)
-newtype GithubUser
-  = GithubUser { runGithubUser  :: String }
-  deriving (Show, Eq, Ord)
-newtype GithubRepo
-  = GithubRepo { runGithubRepo  :: String }
-  deriving (Show, Eq, Ord)
 
 -- | Attempt to retrieve package metadata from the current directory.
 -- Calls exitFailure if no package metadata could be retrieved.

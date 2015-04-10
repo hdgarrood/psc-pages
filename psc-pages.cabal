@@ -50,6 +50,8 @@ library
                      , PscPages.IOUtils
                      , PscPages.PackageMeta
                      , PscPages.Program
+                     , PscPages.Types
+                     , PscPages.TracedJson
                      , Paths_psc_pages
 
 executable psc-pages

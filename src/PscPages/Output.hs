@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 
 -- | Functions and types relevant to producing some form of output after
 -- rendering documentation.
@@ -17,31 +18,11 @@ import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 
 import PscPages.Render
-import PscPages.PackageMeta
-
--- | A function that takes a list of bookmarks and a list of modules, and
--- returns an action that will probably do something like take the rendered
--- documentation and write it to disk.
-type OutputFn = FilePath -> PackageMeta -> M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ()
-
--- | Specifies whether a PureScript source file is considered as:
---
--- 1) a target source file, i.e., we want to see its modules in the output
--- 2) a dependencies source file, i.e. we do not want to get output from it,
--- it is only there to enable desugaring, and to ensure that links between
--- modules are constructed correctly.
-data FileInfo
-  = TargetFile FilePath
-  | DepsFile PackageName FilePath
-  deriving (Show)
+import PscPages.Types
 
 fileInfoToString :: FileInfo -> FilePath
-fileInfoToString (TargetFile fn) = fn
-fileInfoToString (DepsFile _ fn) = fn
-
-isTarget :: FileInfo -> Bool
-isTarget (TargetFile _) = True
-isTarget _ = False
+fileInfoToString (Local fn) = fn
+fileInfoToString (FromDep _ fn) = fn
 
 addDefaultImport :: P.ModuleName -> P.Module -> P.Module
 addDefaultImport toImport m@(P.Module coms mn decls exps)  =
@@ -104,9 +85,9 @@ parseAndDesugar' ::
   -> (M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ())
   -> IO ()
 parseAndDesugar' withPrelude inputFiles depsFiles callback = do
-  inputFiles' <- mapM (parseAs TargetFile) inputFiles
-  depsFiles'  <- mapM (\(pkgName, f) -> parseAs (DepsFile pkgName) f) depsFiles
-  let preludeInfo = if withPrelude then TargetFile else DepsFile (PackageName "prelude")
+  inputFiles' <- mapM (parseAs Local) inputFiles
+  depsFiles'  <- mapM (\(pkgName, f) -> parseAs (FromDep pkgName) f) depsFiles
+  let preludeInfo = if withPrelude then Local else FromDep (PackageName "prelude")
   let allFiles = (preludeInfo "<prelude>", P.prelude) : (inputFiles' ++ depsFiles')
 
   case P.parseModulesFromFiles fileInfoToString allFiles of
@@ -115,7 +96,7 @@ parseAndDesugar' withPrelude inputFiles depsFiles callback = do
       hPutStrLn stderr $ show err
       exitFailure
     Right ms -> do
-      let (targetModuleNames, depsModules) = getTargetAndDepsModuleNames ms
+      let depsModules = getDepsModuleNames (map (\(fp, m) -> (,m) <$> fp) ms)
       case P.sortModules . map (importPrim . importPrelude . snd) $ ms of
         Left e' -> do
           hPutStrLn stderr "sortModules failed:"
@@ -128,18 +109,24 @@ parseAndDesugar' withPrelude inputFiles depsFiles callback = do
               hPutStrLn stderr $ P.prettyPrintMultipleErrors False err
               exitFailure
             Right modules ->
-              let bookmarks = concatMap collectBookmarks modules
-                  modules' = filter ((`elem` targetModuleNames) . P.getModuleName) modules
-              in  callback depsModules bookmarks modules'
+              let modules' = map (addPackage depsModules) modules
+                  bookmarks = concatMap collectBookmarks modules'
+              in  callback depsModules bookmarks (takeLocals modules')
 
   where
   parseAs :: (FilePath -> a) -> FilePath -> IO (a, String)
   parseAs g = fmap (first g) . parseFile
 
-  getTargetAndDepsModuleNames :: [(FileInfo, P.Module)] -> ([P.ModuleName], M.Map P.ModuleName PackageName)
-  getTargetAndDepsModuleNames = foldl go ([], M.empty)
+  getDepsModuleNames :: [InPackage (FilePath, P.Module)] -> M.Map P.ModuleName PackageName
+  getDepsModuleNames = foldl go M.empty
     where
-    go (targets, deps) (TargetFile _, m) =
-      (P.getModuleName m : targets, deps)
-    go (targets, deps) (DepsFile pkgName _, m) =
-      (targets, M.insert (P.getModuleName m) pkgName deps)
+    go deps p = deps # case p of
+      Local _ -> id
+      FromDep pkgName (_, m) -> M.insert (P.getModuleName m) pkgName
+    (#) = flip ($)
+
+  addPackage :: M.Map P.ModuleName PackageName -> P.Module -> InPackage P.Module
+  addPackage depsModules m =
+    case M.lookup (P.getModuleName m) depsModules of
+      Just pkgName -> FromDep pkgName m
+      Nothing -> Local m

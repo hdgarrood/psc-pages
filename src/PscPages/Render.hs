@@ -4,8 +4,7 @@
 
 module PscPages.Render where
 
--- | Functions and data types for rendering generated documentation for
--- | PureScript code. 
+-- | Functions for rendering documentation generated from PureScript code.
 
 import Control.Applicative
 import Control.Monad
@@ -20,7 +19,7 @@ import qualified Text.Blaze.Html as H
 import qualified Language.PureScript as P
 
 import PscPages.RenderedCode
-import PscPages.PackageMeta
+import PscPages.Types
 
 import qualified Cheapskate
 
@@ -29,10 +28,12 @@ mintersperse _ []       = mempty
 mintersperse _ [x]      = x
 mintersperse sep (x:xs) = x <> sep <> mintersperse sep xs
 
-type Bookmarks = [(P.ModuleName, String)]
+collectBookmarks :: InPackage P.Module -> Bookmarks
+collectBookmarks (Local m) = map Local (collectBookmarks' m)
+collectBookmarks (FromDep pkg m) = map (FromDep pkg) (collectBookmarks' m)
 
-collectBookmarks :: P.Module -> Bookmarks
-collectBookmarks (P.Module _ moduleName ds _) =
+collectBookmarks' :: P.Module -> [(P.ModuleName, String)]
+collectBookmarks' (P.Module _ moduleName ds _) =
   map (moduleName, ) $ mapMaybe getDeclarationTitle ds
 
 getDeclarationTitle :: P.Declaration -> Maybe String
@@ -45,25 +46,6 @@ getDeclarationTitle (P.TypeClassDeclaration name _ _ _)      = Just (show name)
 getDeclarationTitle (P.TypeInstanceDeclaration name _ _ _ _) = Just (show name)
 getDeclarationTitle (P.PositionedDeclaration _ _ d)          = getDeclarationTitle d
 getDeclarationTitle _                                        = Nothing
-
-data RenderedPackage = RenderedPackage
-  { rpName    :: String
-  , rpVersion :: String
-  , rpModules :: [RenderedModule]
-  }
-
-data RenderedModule = RenderedModule
-  { rmName         :: String
-  , rmComments     :: Maybe H.Html
-  , rmDeclarations :: [(String, RenderedDeclaration)]
-  }
-
-data RenderedDeclaration = RenderedDeclaration
-  { rdComments   :: Maybe H.Html
-  , rdCode       :: RenderedCode
-  , rdChildren   :: [RenderedCode]
-  , rdSourceSpan :: Maybe P.SourceSpan
-  }
 
 renderPackage :: PackageMeta -> [P.Module] -> RenderedPackage
 renderPackage pkgMeta mods =
@@ -229,7 +211,7 @@ renderType =
   go _ (P.PrettyPrintArray ty) =
     syntax "[" <> go 0 ty <> syntax "]"
   go _ (P.TypeConstructor (P.Qualified mn name)) =
-    ctor (show name) mn
+    ctor (show name) (toContainingModule mn)
   go n (P.ConstrainedType deps ty) =
     syntax "(" <> constraints <> syntax ")" <> sp
       <> syntax "=>" <> sp <> go n ty

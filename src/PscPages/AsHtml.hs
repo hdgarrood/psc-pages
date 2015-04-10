@@ -9,6 +9,7 @@
 module PscPages.AsHtml where
 
 import Control.Applicative
+import Control.Monad
 import Data.Ord (comparing)
 import Data.Char (toUpper)
 import Data.String (fromString)
@@ -34,6 +35,7 @@ import System.FilePath ((</>))
 
 import Data.FileEmbed
 
+import PscPages.Types
 import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
@@ -41,13 +43,13 @@ import PscPages.Output
 import PscPages.PackageMeta hiding (para)
 import PscPages.IOUtils
 
--- | A tuple containing:
--- * Package metadata,
--- * Mapping of module names to dependent package names,
--- * bookmarks,
--- * source module name (that is, the name of the module which is currently
---   being generated).
-type LinksContext = (PackageMeta, M.Map P.ModuleName PackageName, Bookmarks, P.ModuleName)
+data LinksContext = LinksContext
+  { ctxPackageMeta      :: PackageMeta
+  , ctxDepModules       :: M.Map P.ModuleName PackageName
+  , ctxBookmarks        :: Bookmarks
+  , ctxSourceModuleName :: P.ModuleName
+  }
+  deriving (Show)
 
 outputHtml :: OutputFn
 outputHtml outputDir pkgMeta deps bookmarks modules = do
@@ -68,7 +70,7 @@ outputHtml outputDir pkgMeta deps bookmarks modules = do
 
   for_ ['a'..'z'] $ \c -> do
     let letterFile = outputDir </> ("index/" ++ c : ".html")
-    writeLazyTextFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
+    writeLazyTextFile letterFile (H.renderHtml $ letterPageHtml c (takeLocals bookmarks))
 
   for_ modules (renderModule' outputDir pkgMeta deps bookmarks)
 
@@ -78,7 +80,7 @@ stylesheet = TE.decodeUtf8 $(embedFile "static/style.css")
 bootstrap :: T.Text
 bootstrap = TE.decodeUtf8 $(embedFile "static/bootstrap.min.css")
 
-renderModule' :: FilePath -> PackageMeta -> M.Map P.ModuleName PackageName -> [(P.ModuleName, String)] -> P.Module -> IO ()
+renderModule' :: FilePath -> PackageMeta -> M.Map P.ModuleName PackageName -> Bookmarks -> P.Module -> IO ()
 renderModule' outputDir pkgMeta deps bookmarks m@(P.Module _ moduleName _ _) = do
   let filename = outputDir </> filePathFor moduleName
       html = H.renderHtml $ moduleToHtml pkgMeta deps bookmarks m
@@ -153,7 +155,7 @@ relativeToOtherPackage (PackageName name) (showVersion -> vers) to from =
   where
   dots = replicate (length from - 1) ".."
 
-moduleToHtml :: PackageMeta -> M.Map P.ModuleName PackageName -> [(P.ModuleName, String)] -> P.Module -> H.Html
+moduleToHtml :: PackageMeta -> M.Map P.ModuleName PackageName -> Bookmarks -> P.Module -> H.Html
 moduleToHtml pkgMeta deps bookmarks m =
   template (filePathFor moduleName) (show moduleName) $ do
     for_ (rmComments rm) id
@@ -163,7 +165,7 @@ moduleToHtml pkgMeta deps bookmarks m =
   moduleName = P.getModuleName m
 
   linksContext :: LinksContext
-  linksContext = (pkgMeta, deps, bookmarks, moduleName)
+  linksContext = LinksContext pkgMeta deps bookmarks moduleName
 
 declAsHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
 declAsHtml ctx (title, RenderedDeclaration{..}) = do
@@ -186,22 +188,20 @@ codeAsHtml ctx = outputWith elemAsHtml
   elemAsHtml (Keyword x) = withClass "keyword" (text x)
   elemAsHtml Space       = text " "
 
--- TODO: fix.
-linkToConstructor :: LinksContext -> String -> Maybe P.ModuleName -> H.Html -> H.Html
-linkToConstructor (pkgMeta, modDeps, bookmarks, srcMn) ctor' mn contents
-  | (fromMaybe srcMn mn, ctor') `notElem` bookmarks = contents
-  | otherwise = case mn of
-      Nothing -> linkTo ('#' : ctor') contents
-      Just destMn ->
-        case M.lookup destMn modDeps of
-          Nothing -> contents
-          Just pkgName ->
-            case M.lookup pkgName (pkgMetaDependencies pkgMeta) of
-              Nothing -> contents
-              Just pkgVersion ->
-                let relativeTo' = relativeToOtherPackage pkgName pkgVersion
-                    uri = filePathFor destMn `relativeTo'` filePathFor srcMn
-                in  linkTo (uri ++ "#" ++ ctor') contents
+linkToConstructor :: LinksContext -> String -> ContainingModule -> H.Html -> H.Html
+linkToConstructor LinksContext{..} ctor' containMn contents =
+  fromMaybe contents $ do
+    let bookmark = (fromContainingModule ctxSourceModuleName containMn, ctor')
+    guard (bookmark `elem` ignorePackages ctxBookmarks)
+
+    case containMn of
+      ThisModule -> return (linkTo ('#' : ctor') contents)
+      OtherModule destMn -> do
+        pkgName <- M.lookup destMn ctxDepModules
+        pkgVersion <- M.lookup pkgName (pkgMetaDependencies ctxPackageMeta)
+        let relativeTo' = relativeToOtherPackage pkgName pkgVersion
+            uri = filePathFor destMn `relativeTo'` filePathFor ctxSourceModuleName
+        return (linkTo (uri ++ "#" ++ ctor') contents)
 
 linkToSource :: LinksContext -> P.SourceSpan -> H.Html
 linkToSource ctx (P.SourceSpan name start end) =
@@ -211,7 +211,7 @@ linkToSource ctx (P.SourceSpan name start end) =
   where
   (P.SourcePos startLine _) = start
   (P.SourcePos endLine _) = end
-  (pkgMetaGithub -> (GithubUser user, GithubRepo repo), _, _, _) = ctx
+  (pkgMetaGithub -> (GithubUser user, GithubRepo repo)) = ctxPackageMeta ctx
 
   relativeToBase = intercalate "/" . dropWhile (/= "src") . splitOn "/"
   githubBaseUrl = concat ["https://github.com/", user, "/", repo]

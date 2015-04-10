@@ -16,6 +16,7 @@ import System.FilePath ((</>))
 import System.Directory (getCurrentDirectory)
 import qualified System.FilePath.Glob as Glob
 
+import PscPages.Types
 import PscPages.AsHtml
 import PscPages.AsHoogle
 import PscPages.Output
