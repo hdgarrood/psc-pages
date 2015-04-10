@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- | Functions for rendering generated documentation from PureScript code as
 -- HTML.
@@ -41,12 +42,12 @@ import PscPages.PackageMeta hiding (para)
 import PscPages.IOUtils
 
 -- | A tuple containing:
--- * Mapping of dependency package names to their selected versions,
+-- * Package metadata,
 -- * Mapping of module names to dependent package names,
 -- * bookmarks,
 -- * source module name (that is, the name of the module which is currently
 --   being generated).
-type LinksContext = (M.Map PackageName Version, M.Map P.ModuleName PackageName, Bookmarks, P.ModuleName)
+type LinksContext = (PackageMeta, M.Map P.ModuleName PackageName, Bookmarks, P.ModuleName)
 
 outputHtml :: OutputFn
 outputHtml outputDir pkgMeta deps bookmarks modules = do
@@ -151,7 +152,7 @@ moduleToHtml pkgMeta deps bookmarks m =
   moduleName = P.getModuleName m
 
   linksContext :: LinksContext
-  linksContext = (pkgMetaDependencies pkgMeta, deps, bookmarks, moduleName)
+  linksContext = (pkgMeta, deps, bookmarks, moduleName)
 
 declAsHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
 declAsHtml ctx (title, RenderedDeclaration{..}) = do
@@ -162,7 +163,7 @@ declAsHtml ctx (title, RenderedDeclaration{..}) = do
   case rdComments of
     Just cs -> cs
     Nothing -> return ()
-  for_ rdSourceSpan linkToSource
+  for_ rdSourceSpan (linkToSource ctx)
 
 codeAsHtml :: LinksContext -> RenderedCode -> H.Html
 codeAsHtml ctx = outputWith elemAsHtml
@@ -184,11 +185,16 @@ linkToConstructor (depsVersions, modDeps, bookmarks, srcMn) ctor' mn contents
         let uri = filePathFor destMn `relativeTo` filePathFor srcMn
         in  linkTo (uri ++ "#" ++ ctor') contents
 
-linkToSource :: P.SourceSpan -> H.Html
-linkToSource (P.SourceSpan name (P.SourcePos startLine _) (P.SourcePos endLine _)) =
-  linkTo (githubBaseUrl ++ "/tree/master/" ++ relativeToBase name ++ "#" ++ anchor)
+linkToSource :: LinksContext -> P.SourceSpan -> H.Html
+linkToSource ctx (P.SourceSpan name start end) =
+  linkTo (concat
+            [githubBaseUrl, "/tree/master/", relativeToBase name, "#", anchor])
          (text "Source")
   where
+  (P.SourcePos startLine _) = start
+  (P.SourcePos endLine _) = end
+  (pkgMetaGithub -> (GithubUser user, GithubRepo repo), _, _, _) = ctx
+
   relativeToBase = intercalate "/" . dropWhile (/= "src") . splitOn "/"
-  githubBaseUrl = "https://github.com/purescript/purescript-maybe" -- TODO
+  githubBaseUrl = concat ["https://github.com/", user, "/", repo]
   anchor = "L" ++ show startLine ++ "-L" ++ show endLine
