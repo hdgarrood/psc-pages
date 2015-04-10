@@ -37,7 +37,7 @@ import Data.FileEmbed
 import PscPages.Types
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
-import PscPages.PackageMeta hiding (para)
+import PscPages.PackageMeta
 import PscPages.Utils.IO
 import PscPages.Utils.HtmlHelpers
 

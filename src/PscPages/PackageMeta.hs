@@ -25,8 +25,6 @@ import qualified Data.Text as T
 import qualified Data.Aeson as A
 import Data.Aeson.Lens (key, _String)
 
-import qualified Text.PrettyPrint.Boxes as Boxes
-
 import Control.Applicative
 import Control.Category ((>>>))
 import Control.Lens ((^?), to)
@@ -44,6 +42,7 @@ import Network.HTTP.Client (HttpException(StatusCodeException))
 import Network.HTTP.Types (notFound404)
 
 import PscPages.Types
+import PscPages.Utils.BoxesHelpers
 import qualified PscPages.Utils.TracedJson as TJ
 
 packageIdentifier :: PackageMeta -> String
@@ -69,7 +68,7 @@ getPackageMeta =
                handleWarnings
   where
   printError err = do
-    Boxes.printBox $ case err of
+    printBox $ case err of
       UserError e ->
         vcat
           [ para (concat
@@ -106,7 +105,7 @@ getPackageMeta =
   getPackageName (ResolutionNotVersion (PackageName n)) = n
 
   pluraliseMsg packages were anyOfThese these names =
-    Boxes.printBox $ vcat $
+    printBox $ vcat $
       [ para (concat
         ["The following ", packages, " ", were, " not resolved to a version:"])
       ] ++ (map (indented . para) names) ++
@@ -118,24 +117,6 @@ getPackageMeta =
         , "`bower install`."
         ])
       ]
-
-para :: String -> Boxes.Box
-para = Boxes.para Boxes.left 79
-
-indented :: Boxes.Box -> Boxes.Box
-indented b = Boxes.hcat Boxes.left [Boxes.emptyBox 1 2, b]
-
-successivelyIndented :: [String] -> Boxes.Box
-successivelyIndented [] =
-  Boxes.nullBox
-successivelyIndented (x:xs) =
-  Boxes.vcat Boxes.left [para x, indented (successivelyIndented xs)]
-
-vcat :: [Boxes.Box] -> Boxes.Box
-vcat = Boxes.vcat Boxes.left
-
-spacer :: Boxes.Box
-spacer = Boxes.emptyBox 1 1
 
 -- | An error which meant that it was not possible to retrieve metadata for a
 -- package.
@@ -156,7 +137,7 @@ data UserError
   | NotOnBower PackageName
   deriving (Show)
 
-displayUserError :: UserError -> Boxes.Box
+displayUserError :: UserError -> Box
 displayUserError e = case e of
   BowerJsonNotFound ->
     para (concat
@@ -241,7 +222,7 @@ data OtherError
   | ProcessFailed String [String] IOException
   deriving (Show)
 
-displayOtherError :: OtherError -> Boxes.Box
+displayOtherError :: OtherError -> Box
 displayOtherError e = case e of
   HttpExceptionThrown exc ->
     successivelyIndented

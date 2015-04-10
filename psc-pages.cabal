@@ -52,6 +52,7 @@ library
                      , PscPages.Utils.IO
                      , PscPages.Utils.TracedJson
                      , PscPages.Utils.HtmlHelpers
+                     , PscPages.Utils.BoxesHelpers
                      , Paths_psc_pages
 
 executable psc-pages
