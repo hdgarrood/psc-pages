@@ -17,12 +17,24 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import qualified Language.PureScript as P
 
+import System.FilePath ((</>))
+
 import PscPages.Render
 import PscPages.RenderedCode
+import PscPages.Output
+import PscPages.IOUtils
+import PscPages.PackageMeta
 
-outputPackageAsHoogle :: String -> String -> Bookmarks -> [P.Module] -> T.Text
-outputPackageAsHoogle name vers _ modules =
-  packageAsHoogle (renderPackage name vers modules)
+outputHoogle :: OutputFn
+outputHoogle outputDir pkgMeta _ bookmarks modules =
+  let hoogle = outputPackageAsHoogle pkgMeta bookmarks modules
+  in  writeTextFile (outputDir </> name ++ ".txt") hoogle
+  where
+  name = runPackageName (pkgMetaName pkgMeta)
+
+outputPackageAsHoogle :: PackageMeta -> Bookmarks -> [P.Module] -> T.Text
+outputPackageAsHoogle pkgMeta _ modules =
+  packageAsHoogle (renderPackage pkgMeta modules)
 
 packageAsHoogle :: RenderedPackage -> Text
 packageAsHoogle RenderedPackage{..} = preamble <> modules

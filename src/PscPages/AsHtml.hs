@@ -15,6 +15,8 @@ import Data.Foldable (for_)
 import Data.Maybe (fromMaybe)
 import Data.List (nub, intercalate, sortBy)
 import Data.List.Split (splitOn)
+import Data.Version
+import qualified Data.Map as M
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -35,36 +37,39 @@ import PscPages.HtmlHelpers
 import PscPages.RenderedCode hiding (sp)
 import PscPages.Render
 import PscPages.Output
+import PscPages.PackageMeta hiding (para)
 import PscPages.IOUtils
 
 -- | A tuple containing:
+-- * Mapping of dependency package names to their selected versions,
+-- * Mapping of module names to dependent package names,
 -- * bookmarks,
 -- * source module name (that is, the name of the module which is currently
 --   being generated).
-type LinksContext = (Bookmarks, P.ModuleName)
+type LinksContext = (M.Map PackageName Version, M.Map P.ModuleName PackageName, Bookmarks, P.ModuleName)
 
-outputAsHtml :: FilePath -> OutputFn
-outputAsHtml outputDir bookmarks modules = do
+outputHtml :: OutputFn
+outputHtml outputDir pkgMeta deps bookmarks modules = do
   let stylesheetFile = outputDir </> "style.css"
-  mkdirp stylesheetFile
+  mkParentDir stylesheetFile
   writeTextFile stylesheetFile stylesheet
 
   let bootstrapFile = outputDir </> "bootstrap.min.css"
-  mkdirp bootstrapFile
+  mkParentDir bootstrapFile
   writeTextFile bootstrapFile bootstrap
 
   let contentsFile = outputDir </> "index.html"
   writeLazyTextFile contentsFile (H.renderHtml $ contentsPageHtml modules)
 
   let indexFile = outputDir </> "index/index.html"
-  mkdirp indexFile
+  mkParentDir indexFile
   writeLazyTextFile indexFile (H.renderHtml indexPageHtml)
 
   for_ ['a'..'z'] $ \c -> do
     let letterFile = outputDir </> ("index/" ++ c : ".html")
     writeLazyTextFile letterFile (H.renderHtml $ letterPageHtml c bookmarks)
 
-  for_ modules (renderModule' outputDir bookmarks)
+  for_ modules (renderModule' outputDir pkgMeta deps bookmarks)
 
 stylesheet :: T.Text
 stylesheet = TE.decodeUtf8 $(embedFile "static/style.css")
@@ -72,11 +77,11 @@ stylesheet = TE.decodeUtf8 $(embedFile "static/style.css")
 bootstrap :: T.Text
 bootstrap = TE.decodeUtf8 $(embedFile "static/bootstrap.min.css")
 
-renderModule' :: FilePath -> [(P.ModuleName, String)] -> P.Module -> IO ()
-renderModule' outputDir bookmarks m@(P.Module _ moduleName _ _) = do
+renderModule' :: FilePath -> PackageMeta -> M.Map P.ModuleName PackageName -> [(P.ModuleName, String)] -> P.Module -> IO ()
+renderModule' outputDir pkgMeta deps bookmarks m@(P.Module _ moduleName _ _) = do
   let filename = outputDir </> filePathFor moduleName
-      html = H.renderHtml $ moduleToHtml bookmarks m
-  mkdirp filename
+      html = H.renderHtml $ moduleToHtml pkgMeta deps bookmarks m
+  mkParentDir filename
   writeLazyTextFile filename html
 
 contentsPageHtml :: [P.Module] -> H.Html
@@ -136,8 +141,8 @@ filePathFor (P.ModuleName parts) = go parts
   go [] = "index.html"
   go (x : xs) = show x </> go xs
 
-moduleToHtml :: [(P.ModuleName, String)] -> P.Module -> H.Html
-moduleToHtml bookmarks m =
+moduleToHtml :: PackageMeta -> M.Map P.ModuleName PackageName -> [(P.ModuleName, String)] -> P.Module -> H.Html
+moduleToHtml pkgMeta deps bookmarks m =
   template (filePathFor moduleName) (show moduleName) $ do
     for_ (rmComments rm) id
     for_ (rmDeclarations rm) (declAsHtml linksContext)
@@ -146,7 +151,7 @@ moduleToHtml bookmarks m =
   moduleName = P.getModuleName m
 
   linksContext :: LinksContext
-  linksContext = (bookmarks, moduleName)
+  linksContext = (pkgMetaDependencies pkgMeta, deps, bookmarks, moduleName)
 
 declAsHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
 declAsHtml ctx (title, RenderedDeclaration{..}) = do
@@ -169,8 +174,9 @@ codeAsHtml ctx = outputWith elemAsHtml
   elemAsHtml (Keyword x) = withClass "keyword" (text x)
   elemAsHtml Space       = text " "
 
+-- TODO: fix.
 linkToConstructor :: LinksContext -> String -> Maybe P.ModuleName -> H.Html -> H.Html
-linkToConstructor (bookmarks, srcMn) ctor' mn contents
+linkToConstructor (depsVersions, modDeps, bookmarks, srcMn) ctor' mn contents
   | (fromMaybe srcMn mn, ctor') `notElem` bookmarks = contents
   | otherwise = case mn of
       Nothing -> linkTo ('#' : ctor') contents

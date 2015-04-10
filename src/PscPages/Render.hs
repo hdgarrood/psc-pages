@@ -9,6 +9,7 @@ module PscPages.Render where
 
 import Control.Applicative
 import Control.Monad
+import Data.Version (showVersion)
 import Data.Monoid ((<>), mempty, Monoid)
 import Data.Default (def)
 import Data.String (fromString)
@@ -19,6 +20,7 @@ import qualified Text.Blaze.Html as H
 import qualified Language.PureScript as P
 
 import PscPages.RenderedCode
+import PscPages.PackageMeta
 
 import qualified Cheapskate
 
@@ -63,9 +65,12 @@ data RenderedDeclaration = RenderedDeclaration
   , rdSourceSpan :: Maybe P.SourceSpan
   }
 
-renderPackage :: String -> String -> [P.Module] -> RenderedPackage
-renderPackage name vers mods =
+renderPackage :: PackageMeta -> [P.Module] -> RenderedPackage
+renderPackage pkgMeta mods =
   RenderedPackage name vers (map renderModule mods)
+  where
+  name = runPackageName (pkgMetaName pkgMeta)
+  vers = showVersion (pkgMetaVersion pkgMeta)
 
 renderModule :: P.Module -> RenderedModule
 renderModule m@(P.Module coms moduleName  _ exps) =

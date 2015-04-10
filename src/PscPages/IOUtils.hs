@@ -24,4 +24,7 @@ readTextFile :: FilePath -> IO T.Text
 readTextFile fp = fmap TE.decodeUtf8 (B.readFile fp)
 
 mkdirp :: FilePath -> IO ()
-mkdirp = createDirectoryIfMissing True . takeDirectory
+mkdirp = createDirectoryIfMissing True
+
+mkParentDir :: FilePath -> IO ()
+mkParentDir = mkdirp . takeDirectory

@@ -17,6 +17,7 @@ import Data.List (stripPrefix, isSuffixOf)
 import Data.List.Split (splitOn)
 import Data.Version
 import Text.ParserCombinators.ReadP (readP_to_S)
+import qualified Data.Map as M
 
 import qualified Data.ByteString as B
 import Data.Text (Text)
@@ -48,14 +49,20 @@ import qualified PscPages.TracedJson as TJ
 data PackageMeta = PackageMeta
   { pkgMetaName         :: PackageName
   , pkgMetaVersion      :: Version
-  , pkgMetaDependencies :: [(PackageName, Version)]
+  , pkgMetaDependencies :: M.Map PackageName Version
   , pkgMetaGithub       :: (GithubUser, GithubRepo)
   }
   deriving (Show, Eq, Ord)
 
-newtype PackageName = PackageName String deriving (Show, Eq, Ord)
-newtype GithubUser  = GithubUser String  deriving (Show, Eq, Ord)
-newtype GithubRepo  = GithubRepo String  deriving (Show, Eq, Ord)
+newtype PackageName
+  = PackageName { runPackageName :: String }
+  deriving (Show, Eq, Ord)
+newtype GithubUser
+  = GithubUser { runGithubUser  :: String }
+  deriving (Show, Eq, Ord)
+newtype GithubRepo
+  = GithubRepo { runGithubRepo  :: String }
+  deriving (Show, Eq, Ord)
 
 -- | Attempt to retrieve package metadata from the current directory.
 -- Calls exitFailure if no package metadata could be retrieved.
@@ -132,9 +139,8 @@ outputBaseDirectory :: PackageMeta -> FilePath
 outputBaseDirectory pkgMeta =
   concat [ name, "/", version ]
   where
-  PackageName name = pkgMetaName pkgMeta
+  name = runPackageName (pkgMetaName pkgMeta)
   version = showVersion (pkgMetaVersion pkgMeta)
-
 
 -- | An error which meant that it was not possible to retrieve metadata for a
 -- package.
@@ -274,7 +280,7 @@ getPackageMeta' = do
                           (parseVersion' versionStr)
 
   pkgMetaGithub <- getBowerInfo pkgMetaName
-  pkgMetaDependencies <- getBowerDepsVersions
+  pkgMetaDependencies <- M.fromList <$> getBowerDepsVersions
 
   return PackageMeta{..}
 

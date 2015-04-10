@@ -27,6 +27,7 @@ library
                        Glob,
                        transformers,
                        mtl,
+                       containers,
                        unordered-containers,
                        optparse-applicative,
                        process,

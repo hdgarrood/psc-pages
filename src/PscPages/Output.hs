@@ -4,10 +4,11 @@
 
 module PscPages.Output where
 
+import qualified Data.Map as M
+
 import Control.Applicative
 import Control.Monad
 import Control.Arrow (first)
-import Data.List (nub)
 
 import qualified Language.PureScript as P
 import qualified Language.PureScript.Constants as C
@@ -16,11 +17,12 @@ import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 
 import PscPages.Render
+import PscPages.PackageMeta
 
 -- | A function that takes a list of bookmarks and a list of modules, and
 -- returns an action that will probably do something like take the rendered
 -- documentation and write it to disk.
-type OutputFn = Bookmarks -> [P.Module] -> IO ()
+type OutputFn = FilePath -> PackageMeta -> M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ()
 
 -- | Specifies whether a PureScript source file is considered as:
 --
@@ -30,11 +32,12 @@ type OutputFn = Bookmarks -> [P.Module] -> IO ()
 -- modules are constructed correctly.
 data FileInfo
   = TargetFile FilePath
-  | DepsFile FilePath
+  | DepsFile PackageName FilePath
+  deriving (Show)
 
 fileInfoToString :: FileInfo -> FilePath
 fileInfoToString (TargetFile fn) = fn
-fileInfoToString (DepsFile fn) = fn
+fileInfoToString (DepsFile _ fn) = fn
 
 isTarget :: FileInfo -> Bool
 isTarget (TargetFile _) = True
@@ -70,26 +73,41 @@ parseFile input' = (,) input' <$> readFile input'
 --  * another list of PureScript source files which should contain all
 --    necessary code to parse and desugar the target input files
 --  * an output function, which specifies what to do after parsing and
---    desugaring.
+--    desugaring,
 --
 -- Read, parse, and desugar the input files and hand them off to the output
 -- function. Note that bookmarks will be generated for the union of target and
 -- dependencies files, but the list of modules which are passed to the output
 -- function contains only those which were in the target list.
-parseAndDesugar :: [FilePath] -> [FilePath] -> OutputFn -> IO ()
-parseAndDesugar = parseAndDesugar' False
+parseAndDesugar ::
+  [FilePath]
+  -> [(PackageName, FilePath)]
+  -> (M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ())
+  -> IO ()
+parseAndDesugar =
+  parseAndDesugar' False
 
 -- | Like parseAndDesugar, except that the Prelude modules will be included
 -- in the output.
-parseAndDesugarWithPrelude :: [FilePath] -> [FilePath] -> OutputFn -> IO ()
-parseAndDesugarWithPrelude = parseAndDesugar' True
+parseAndDesugarWithPrelude ::
+  [FilePath]
+  -> [(PackageName, FilePath)]
+  -> (M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ())
+  -> IO ()
+parseAndDesugarWithPrelude =
+  parseAndDesugar' True
 
-parseAndDesugar' :: Bool -> [FilePath] -> [FilePath] -> OutputFn -> IO ()
-parseAndDesugar' withPrelude inputFiles depsFiles outputFn = do
-  inputFiles' <- parseAs TargetFile inputFiles
-  depsFiles'  <- parseAs DepsFile depsFiles
-  let preludeInfo = if withPrelude then TargetFile else DepsFile
-  let allFiles = (preludeInfo "Prelude", P.prelude) : (inputFiles' ++ depsFiles')
+parseAndDesugar' ::
+  Bool
+  -> [FilePath]
+  -> [(PackageName, FilePath)]
+  -> (M.Map P.ModuleName PackageName -> Bookmarks -> [P.Module] -> IO ())
+  -> IO ()
+parseAndDesugar' withPrelude inputFiles depsFiles callback = do
+  inputFiles' <- mapM (parseAs TargetFile) inputFiles
+  depsFiles'  <- mapM (\(pkgName, f) -> parseAs (DepsFile pkgName) f) depsFiles
+  let preludeInfo = if withPrelude then TargetFile else DepsFile (PackageName "prelude")
+  let allFiles = (preludeInfo "<prelude>", P.prelude) : (inputFiles' ++ depsFiles')
 
   case P.parseModulesFromFiles fileInfoToString allFiles of
     Left err -> do
@@ -97,7 +115,7 @@ parseAndDesugar' withPrelude inputFiles depsFiles outputFn = do
       hPutStrLn stderr $ show err
       exitFailure
     Right ms -> do
-      let targetModuleNames = map (P.getModuleName . snd) $ filter (isTarget . fst) ms
+      let (targetModuleNames, depsModules) = getTargetAndDepsModuleNames ms
       case P.sortModules . map (importPrim . importPrelude . snd) $ ms of
         Left e' -> do
           hPutStrLn stderr "sortModules failed:"
@@ -112,9 +130,16 @@ parseAndDesugar' withPrelude inputFiles depsFiles outputFn = do
             Right modules ->
               let bookmarks = concatMap collectBookmarks modules
                   modules' = filter ((`elem` targetModuleNames) . P.getModuleName) modules
-              in  outputFn bookmarks modules'
+              in  callback depsModules bookmarks modules'
 
   where
-  parseAs :: (FilePath -> a) -> [FilePath] -> IO [(a, String)]
-  parseAs g = fmap (map (first g)) . mapM parseFile . nub
+  parseAs :: (FilePath -> a) -> FilePath -> IO (a, String)
+  parseAs g = fmap (first g) . parseFile
 
+  getTargetAndDepsModuleNames :: [(FileInfo, P.Module)] -> ([P.ModuleName], M.Map P.ModuleName PackageName)
+  getTargetAndDepsModuleNames = foldl go ([], M.empty)
+    where
+    go (targets, deps) (TargetFile _, m) =
+      (P.getModuleName m : targets, deps)
+    go (targets, deps) (DepsFile pkgName _, m) =
+      (targets, M.insert (P.getModuleName m) pkgName deps)
