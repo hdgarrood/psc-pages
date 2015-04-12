@@ -182,16 +182,20 @@ moduleToHtml pkgMeta deps bookmarks m =
   linksContext :: LinksContext
   linksContext = LinksContext pkgMeta deps bookmarks moduleName
 
-declAsHtml :: LinksContext -> (String, RenderedDeclaration) -> H.Html
-declAsHtml ctx (title, RenderedDeclaration{..}) = do
-  H.a ! A.name (fromString title) ! A.href (fromString ('#' : title)) $
-    H.h2 $ H.code $ text title
+declAsHtml :: LinksContext -> RenderedDeclaration -> H.Html
+declAsHtml ctx RenderedDeclaration{..} = do
+  H.a ! A.name (fromString rdTitle) ! A.href (fromString ('#' : rdTitle)) $
+    H.h2 $ H.code $ text rdTitle
   para "decl" (H.code (codeAsHtml ctx rdCode))
-  H.ul (mapM_ (H.li . H.code . codeAsHtml ctx) rdChildren)
+  renderChildren ctx rdChildren
   case rdComments of
     Just cs -> cs
     Nothing -> return ()
   for_ rdSourceSpan (linkToSource ctx)
+
+renderChildren :: LinksContext -> [RenderedChildDeclaration] -> H.Html
+renderChildren ctx =
+  H.ul . mapM_ (H.li . H.code . codeAsHtml ctx . rcdCode)
 
 codeAsHtml :: LinksContext -> RenderedCode -> H.Html
 codeAsHtml ctx = outputWith elemAsHtml

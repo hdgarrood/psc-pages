@@ -4,11 +4,14 @@ module PscPages.Types
   )
   where
 
+import Data.Either
 import Data.Maybe
 import Data.Version
 import qualified Language.PureScript as P
 import qualified Text.Blaze.Html as H
 import qualified Data.Map as M
+
+import Control.Lens (lens, Lens')
 
 import PscPages.RenderedCode as ReExports (RenderedCode, ContainingModule(..))
 
@@ -67,15 +70,30 @@ data RenderedPackage = RenderedPackage
 data RenderedModule = RenderedModule
   { rmName         :: String
   , rmComments     :: Maybe H.Html
-  , rmDeclarations :: [(String, RenderedDeclaration)]
+  , rmDeclarations :: [RenderedDeclaration]
   }
 
 data RenderedDeclaration = RenderedDeclaration
-  { rdComments   :: Maybe H.Html
+  { rdTitle      :: String
+  , rdComments   :: Maybe H.Html
   , rdCode       :: RenderedCode
-  , rdChildren   :: [RenderedCode]
   , rdSourceSpan :: Maybe P.SourceSpan
+  , rdChildren   :: [RenderedChildDeclaration]
   }
+
+data RenderedChildDeclaration = RenderedChildDeclaration
+  { rcdTitle      :: String
+  , rcdComments   :: Maybe H.Html
+  , rcdCode       :: RenderedCode
+  , rcdSourceSpan :: Maybe P.SourceSpan
+  , rcdType       :: RenderedChildDeclarationType
+  }
+
+data RenderedChildDeclarationType
+  = ChildInstance
+  | ChildDataConstructor
+  | ChildTypeClassMember
+  deriving (Show, Eq, Ord)
 
 -----------------------
 -- Documentation output

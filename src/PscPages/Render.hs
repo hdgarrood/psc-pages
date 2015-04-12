@@ -1,18 +1,20 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-
-module PscPages.Render where
+{-# LANGUAGE ViewPatterns #-}
 
 -- | Functions for rendering documentation generated from PureScript code.
 
-import Control.Applicative
+module PscPages.Render where
+
 import Control.Monad
+import Data.Either
 import Data.Version (showVersion)
 import Data.Monoid ((<>), mempty, Monoid)
 import Data.Default (def)
 import Data.String (fromString)
 import Data.Maybe (mapMaybe)
+import Data.List (nub)
 
 import qualified Text.Blaze.Html as H
 
@@ -33,8 +35,11 @@ collectBookmarks (Local m) = map Local (collectBookmarks' m)
 collectBookmarks (FromDep pkg m) = map (FromDep pkg) (collectBookmarks' m)
 
 collectBookmarks' :: P.Module -> [(P.ModuleName, String)]
-collectBookmarks' (P.Module _ moduleName ds _) =
-  map (moduleName, ) $ mapMaybe getDeclarationTitle ds
+collectBookmarks' m =
+  map (P.getModuleName m, )
+      (mapMaybe getDeclarationTitle
+                (P.exportedDeclarations m))
+
 
 getDeclarationTitle :: P.Declaration -> Maybe String
 getDeclarationTitle (P.TypeDeclaration name _)               = Just (show name)
@@ -59,44 +64,85 @@ renderModule m@(P.Module coms moduleName  _ exps) =
   RenderedModule (show moduleName) comments declarations
   where
   comments = renderComments coms
-  declarations = mapMaybe go (P.exportedDeclarations m)
-  go decl = (,) <$> getDeclarationTitle decl <*> renderDeclaration exps decl
+  declarations = groupChildren declarationsWithChildren
+  declarationsWithChildren = mapMaybe go (P.exportedDeclarations m)
+  go decl = getDeclarationTitle decl
+             >>= renderDeclaration exps decl
 
-basicDeclaration :: RenderedCode -> Maybe RenderedDeclaration
-basicDeclaration code = Just (RenderedDeclaration Nothing code [] Nothing)
+-- | An intermediate stage which we go through during rendering.
+--
+-- In the first pass, we take all top level declarations in the module, and
+-- render those which should appear at the top level in the output, as well as
+-- those which should appear as children of other declarations in the output.
+--
+-- In the second pass, we move all children under their respective parents,
+-- or discard them if none are found.
+--
+-- This two-pass system is only necessary for type instance declarations, since
+-- they appear at the top level in the AST, and since they might need to appear
+-- as children in two places (for example, if a data type defined in a module
+-- is an instance of a type class also defined in that module).
+--
+-- This data type is used as an intermediate type between the two stages. The
+-- Left case is a child declaration, together with a list of parent declaration
+-- titles which this may appear as a child of.
+--
+-- The Right case is a top level declaration which should pass straight through
+-- the second stage; the only way it might change is if child declarations are
+-- added to it.
+type IntermediateDeclaration
+  = Either ([String], RenderedChildDeclaration) RenderedDeclaration
 
-renderDeclaration :: Maybe [P.DeclarationRef] -> P.Declaration -> Maybe RenderedDeclaration
-renderDeclaration _ (P.TypeDeclaration ident' ty) =
-  basicDeclaration code
+-- | Move child declarations into their respective parents; the second pass.
+-- See the comments under the type synonym IntermediateDeclaration for more
+-- information.
+groupChildren :: [IntermediateDeclaration] -> [RenderedDeclaration]
+groupChildren (partitionEithers -> (children, toplevels)) =
+  foldl go toplevels children
+  where
+  go ds (parentTitles, child) =
+    map (\d ->
+      if rdTitle d `elem` parentTitles
+        then d { rdChildren = rdChildren d ++ [child] }
+        else d) ds
+
+basicDeclaration :: String -> RenderedCode -> Maybe IntermediateDeclaration
+basicDeclaration title code = Just (Right (RenderedDeclaration title Nothing code Nothing []))
+
+renderDeclaration :: Maybe [P.DeclarationRef] -> P.Declaration -> String -> Maybe IntermediateDeclaration
+renderDeclaration _ (P.TypeDeclaration ident' ty) title =
+  basicDeclaration title code
   where
   code = ident (show ident')
           <> sp <> syntax "::" <> sp
           <> renderType ty
-renderDeclaration _ (P.ExternDeclaration _ ident' _ ty) =
-  basicDeclaration code
+renderDeclaration _ (P.ExternDeclaration _ ident' _ ty) title =
+  basicDeclaration title code
   where
   code = ident (show ident')
           <> sp <> syntax "::" <> sp
           <> renderType ty
-renderDeclaration exps (P.DataDeclaration dtype name args ctors) =
-  Just (RenderedDeclaration Nothing code children Nothing)
+renderDeclaration exps (P.DataDeclaration dtype name args ctors) title =
+  Just (Right (RenderedDeclaration title Nothing code Nothing children))
   where
   typeApp  = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
   exported = filter (P.isDctorExported name exps . fst) ctors
   code = keyword (show dtype) <> sp <> renderType typeApp
   children = map renderCtor exported
+  -- TODO: Comments for data constructors?
   renderCtor (ctor', tys) =
           let typeApp' = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing ctor')) tys
-          in renderType typeApp'
-renderDeclaration _ (P.ExternDataDeclaration name kind') =
-  basicDeclaration code
+              childCode = renderType typeApp'
+          in  RenderedChildDeclaration (show ctor') Nothing childCode Nothing ChildDataConstructor
+renderDeclaration _ (P.ExternDataDeclaration name kind') title =
+  basicDeclaration title code
   where
   code = keywordData <> sp
           <> renderType (P.TypeConstructor (P.Qualified Nothing name))
           <> sp <> syntax "::" <> sp
           <> kind (P.prettyPrintKind kind') -- TODO: Proper renderKind function?
-renderDeclaration _ (P.TypeSynonymDeclaration name args ty) =
-  basicDeclaration code
+renderDeclaration _ (P.TypeSynonymDeclaration name args ty) title =
+  basicDeclaration title code
   where
   typeApp = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
   code = mintersperse sp
@@ -105,8 +151,8 @@ renderDeclaration _ (P.TypeSynonymDeclaration name args ty) =
           , syntax "="
           , renderType ty
           ]
-renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
-  Just (RenderedDeclaration Nothing code children Nothing)
+renderDeclaration _ (P.TypeClassDeclaration name args implies ds) title = do
+  Just (Right (RenderedDeclaration title Nothing code Nothing children))
   where
   code = mintersperse sp $
            [keywordClass]
@@ -125,30 +171,41 @@ renderDeclaration _ (P.TypeClassDeclaration name args implies ds) = do
     let supApp = foldl P.TypeApp (P.TypeConstructor pn) tys
     in renderType supApp
 
-  classApp  = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
+  classApp = foldl P.TypeApp (P.TypeConstructor (P.Qualified Nothing name)) (map toTypeVar args)
 
   children = map renderClassMember ds
 
+  -- TODO: Comments for type class members
   renderClassMember (P.PositionedDeclaration _ _ d) = renderClassMember d
   renderClassMember (P.TypeDeclaration ident' ty) =
-    mintersperse sp
-      [ ident (show ident')
-      , syntax "::"
-      , renderType ty
-      ]
+    let childCode =
+          mintersperse sp
+            [ ident (show ident')
+            , syntax "::"
+            , renderType ty
+            ]
+    in  RenderedChildDeclaration (show ident') Nothing childCode Nothing ChildTypeClassMember
   renderClassMember _ = error "Invalid argument to renderClassMember."
-renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _) = do
-  basicDeclaration code
+renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _) title = do
+  Just (Left (classNameString : typeNameStrings, childDecl))
   where
+  classNameString = unQual className
+  typeNameStrings = nub (concatMap (P.everythingOnTypes (++) extractProperNames) tys)
+  unQual x = let (P.Qualified _ y) = x in show y
+
+  extractProperNames (P.TypeConstructor n) = [unQual n]
+  extractProperNames (P.SaturatedTypeSynonym n _) = [unQual n]
+  extractProperNames _ = []
+
+  childDecl = RenderedChildDeclaration title Nothing code Nothing ChildInstance
+
   code =
     mintersperse sp $
       [ keywordInstance
       , ident (show name)
       , syntax "::"
       ] ++ maybe [] (:[]) constraints'
-        ++ [ renderType classApp
-           , keywordWhere
-           ]
+        ++ [ renderType classApp ]
 
   constraints'
     | null constraints = Nothing
@@ -161,12 +218,15 @@ renderDeclaration _ (P.TypeInstanceDeclaration name constraints className tys _)
     in renderType supApp
 
   classApp = foldl P.TypeApp (P.TypeConstructor className) tys
-renderDeclaration exps (P.PositionedDeclaration srcSpan com d) =
-  fmap (addComments . addSourceSpan) (renderDeclaration exps d)
+renderDeclaration exps (P.PositionedDeclaration srcSpan com d') title =
+  fmap (addComments . addSourceSpan) (renderDeclaration exps d' title)
   where
-  addComments rd   = rd { rdComments   = renderComments com }
-  addSourceSpan rd = rd { rdSourceSpan = Just srcSpan }
-renderDeclaration _ _ = Nothing
+  addComments (Left (t, d)) = Left (t, d { rcdComments = renderComments com })
+  addComments (Right d) = Right (d { rdComments = renderComments com })
+
+  addSourceSpan (Left (t, d)) = Left (t, d { rcdSourceSpan = Just srcSpan })
+  addSourceSpan (Right d) = Right (d { rdSourceSpan = Just srcSpan })
+renderDeclaration _ _ _ = Nothing
 
 renderComments :: [P.Comment] -> Maybe H.Html
 renderComments cs = do

@@ -65,7 +65,7 @@ moduleAsHoogle :: RenderedModule -> Text
 moduleAsHoogle RenderedModule{..} =
   commentsAsHoogle rmComments
     <> "module " <> T.pack rmName <> " where\n\n"
-    <> foldMap ((<> "\n\n") . declAsHoogle . snd) rmDeclarations
+    <> foldMap ((<> "\n\n") . declAsHoogle) rmDeclarations
 
 commentsAsHoogle :: Maybe H.Html -> Text
 commentsAsHoogle =
